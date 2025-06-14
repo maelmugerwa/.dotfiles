@@ -6,12 +6,12 @@ Interactive setup for a complete development environment across Linux and macOS.
 
 Interactive mode (recommended):
 ```bash
-curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh | bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)"
 ```
 
 Non-interactive mode:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh | bash -s -- --non-interactive
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)" -- --non-interactive
 ```
 
 ## Management Features

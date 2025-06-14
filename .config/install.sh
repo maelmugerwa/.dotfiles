@@ -18,8 +18,11 @@
 #   * Restore selected files to their original locations
 #
 # Usage:
-#   ./install.sh               # Interactive menu mode
-#   ./install.sh --non-interactive  # Skip the menu, perform standard install
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)"  # Interactive menu mode (recommended)
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)" -- --non-interactive  # Skip the menu, perform standard install
+#
+# Note: The old method of installation (piping curl directly to bash) does not work properly with interactive mode:
+#   curl -fsSL ... | bash  # AVOID using this method as it breaks interactive input
 #
 # Prerequisites:
 # - Git (will be installed by bootstrap script if missing)
@@ -134,8 +137,18 @@ install_yadm() {
 cleanup() {
   log_info "Cleaning up previous installations..."
   
-  # Remove yadm if installed via brew
+  # Remove all files tracked by yadm if it's installed
   if command -v yadm &> /dev/null; then
+    log_info "Removing files tracked by yadm..."
+    # First try to get a list of tracked files and remove them
+    yadm list -a 2>/dev/null | while read -r file; do
+      local full_path="$HOME/$file"
+      if [[ -f "$full_path" || -d "$full_path" ]]; then
+        log_info "Removing tracked file: $file"
+        rm -rf "$full_path"
+      fi
+    done
+    
     log_info "Removing yadm..."
     brew uninstall yadm 2>/dev/null || true
   fi
@@ -165,11 +178,20 @@ restore_from_backup() {
     echo "  $((i+1))) ${backup_dirs[$i]} ($(date -r "${backup_dirs[$i]}" "+%Y-%m-%d %H:%M:%S"))"
   done
   
-  read -p "Select a backup to restore [1-${#backup_dirs[@]}]: " backup_choice
-  
-  if ! [[ "$backup_choice" =~ ^[0-9]+$ ]] || [ "$backup_choice" -lt 1 ] || [ "$backup_choice" -gt "${#backup_dirs[@]}" ]; then
-    log_error "Invalid selection!"
-    return 1
+  # Check if the script is running with stdin connected to a terminal
+  if [ -t 0 ]; then
+    read -p "Select a backup to restore [1-${#backup_dirs[@]}]: " backup_choice
+    
+    if ! [[ "$backup_choice" =~ ^[0-9]+$ ]] || [ "$backup_choice" -lt 1 ] || [ "$backup_choice" -gt "${#backup_dirs[@]}" ]; then
+      log_error "Invalid selection!"
+      return 1
+    fi
+  else
+    # If stdin is not a terminal, default to the most recent backup
+    log_warn "Interactive input not available (stdin is not a terminal)."
+    log_warn "Defaulting to the most recent backup (option 1)."
+    backup_choice=1
+    sleep 2
   fi
   
   selected_backup="${backup_dirs[$((backup_choice-1))]}"
@@ -203,7 +225,19 @@ interactive_menu() {
   echo "3) Restore from backup"
   echo "4) Exit"
   echo ""
-  read -p "Enter your choice [1-4]: " choice
+  
+  # Check if the script is running with stdin connected to a terminal
+  # This prevents hanging when the script is piped to bash without process substitution
+  if [ -t 0 ]; then
+    read -p "Enter your choice [1-4]: " choice
+  else
+    # If stdin is not a terminal, default to non-interactive installation
+    log_warn "Interactive input not available (stdin is not a terminal)."
+    log_warn "Defaulting to standard installation (option 1)."
+    log_warn "For interactive mode, use: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)\""
+    choice=1
+    sleep 2
+  fi
   
   case "$choice" in
     1)
@@ -212,14 +246,26 @@ interactive_menu() {
     2)
       cleanup
       echo ""
-      read -p "Press Enter to return to the menu or Ctrl+C to exit..."
-      interactive_menu
+      if [ -t 0 ]; then
+        read -p "Press Enter to return to the menu or Ctrl+C to exit..."
+        interactive_menu
+      else
+        log_info "Returning to menu automatically (stdin is not a terminal)."
+        sleep 2
+        interactive_menu
+      fi
       ;;
     3)
       restore_from_backup
       echo ""
-      read -p "Press Enter to return to the menu or Ctrl+C to exit..."
-      interactive_menu
+      if [ -t 0 ]; then
+        read -p "Press Enter to return to the menu or Ctrl+C to exit..."
+        interactive_menu
+      else
+        log_info "Returning to menu automatically (stdin is not a terminal)."
+        sleep 2
+        interactive_menu
+      fi
       ;;
     4)
       echo "Exiting..."
@@ -271,22 +317,10 @@ clone_dotfiles() {
     done
   fi
   
-  # Clone the repository
-  yadm clone "$REPO_URL"
-  
-  # Run the bootstrap script if available
-  if yadm ls-files | grep -q "^.config/yadm/bootstrap$"; then
-    log_info "Running bootstrap script..."
-    log_info "This will install additional tools and configure your environment"
-    log_info "The bootstrap process includes:"
-    log_info " - Installing Homebrew (package manager)"
-    log_info " - Setting up essential CLI tools"
-    log_info " - Configuring ZSH with useful plugins"
-    log_info " - Creating a basic development environment"
-    yadm bootstrap
-  else
-    log_warn "Bootstrap script not found. You may need to run it manually."
-  fi
+  # Clone the repository and let YADM handle bootstrap automatically
+  log_info "Cloning repository and responding to bootstrap prompt..."
+  # Use yes to automatically answer 'y' to bootstrap prompt
+  yes | yadm clone "$REPO_URL"
   
   log_success "Dotfiles installed successfully!"
 }
@@ -299,6 +333,19 @@ clone_dotfiles() {
 # - yadm pull                   # Get the latest updates
 
 main() {
+  # Check if stdin is connected to a terminal
+  if ! [ -t 0 ] && [ "$1" != "--non-interactive" ]; then
+    # If stdin is not a terminal and not in non-interactive mode,
+    # this is likely being run with: curl ... | bash
+    echo ""
+    log_warn "Interactive input may not work correctly when piping to bash."
+    log_warn "For proper interactive mode, use:"
+    log_warn "  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)\""
+    log_warn ""
+    log_warn "Continuing in 3 seconds (Ctrl+C to cancel)..."
+    sleep 3
+  fi
+
   # Check if non-interactive mode requested
   if [[ "$1" == "--non-interactive" ]]; then
     install_dotfiles
