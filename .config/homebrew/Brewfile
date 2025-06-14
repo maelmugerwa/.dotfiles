@@ -43,4 +43,3 @@ brew "pyenv"                      # Python version manager (commands: pyenv inst
 brew "just"                       # Modern command runner (command: just)
 brew "mcfly"                      # Smart search for shell history (enhances Ctrl+R)
 brew "xclip"                      # X11 clipboard tool (commands: xclip, xclip -o)
-brew "wl-clipboard"               # Wayland clipboard tool (commands: wl-copy, wl-paste)

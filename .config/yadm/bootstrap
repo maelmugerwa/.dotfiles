@@ -127,14 +127,11 @@ handle_ssh_key() {
   if command -v xclip &> /dev/null; then
     xclip -selection clipboard < "${key_path}.pub"
     log_success "$key_name key copied to clipboard using xclip!"
-  elif command -v wl-copy &> /dev/null; then
-    wl-copy < "${key_path}.pub"
-    log_success "$key_name key copied to clipboard using wl-copy!"
   elif command -v pbcopy &> /dev/null; then
     pbcopy < "${key_path}.pub"
     log_success "$key_name key copied to clipboard using pbcopy!"
   else
-    log_warn "No clipboard tool found despite being in Brewfile. Please manually copy the $key_name key shown above."
+    log_warn "No clipboard tool found. Please manually copy the $key_name key shown above."
     log_info "Tip: Run 'brew bundle --file=\"$HOME/.config/homebrew/Brewfile\"' to install clipboard tools."
   fi
   
