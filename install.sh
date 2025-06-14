@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
 
 # install.sh - One-click dotfiles installation script
-# This script installs yadm and clones the dotfiles repository
+# 
+# This script performs a complete setup of dotfiles and development tools:
+# - Installs yadm (Yet Another Dotfiles Manager) if not already present
+# - Backs up any existing dotfiles to prevent conflicts
+# - Clones the dotfiles repository into the appropriate locations
+# - Runs the bootstrap script to set up tools and configurations
+#
+# Prerequisites:
+# - Git (will be installed by bootstrap script if missing)
+# - Curl (used to download this script)
+# - Sudo privileges (for installing packages)
+#
+# The dotfiles include configurations for:
+# - ZSH (shell setup, prompt, plugins, etc.)
+# - Git (aliases, defaults, useful commands)
+# - Modern CLI tools (bat, ripgrep, fd, etc.)
+# - Development environment preferences
 
 set -e
 
@@ -88,7 +104,7 @@ install_yadm() {
   fi
 }
 
-# Clone dotfiles repository
+# Clone dotfiles repository and set up environment
 clone_dotfiles() {
   log_info "Cloning dotfiles repository..."
   
@@ -113,6 +129,12 @@ clone_dotfiles() {
   # Run the bootstrap script if available
   if yadm ls-files | grep -q "^yadm/bootstrap$"; then
     log_info "Running bootstrap script..."
+    log_info "This will install additional tools and configure your environment"
+    log_info "The bootstrap process includes:"
+    log_info " - Installing Homebrew (package manager)"
+    log_info " - Setting up essential CLI tools"
+    log_info " - Configuring ZSH with useful plugins"
+    log_info " - Creating a basic development environment"
     yadm bootstrap
   else
     log_warn "Bootstrap script not found. You may need to run it manually."
@@ -120,6 +142,13 @@ clone_dotfiles() {
   
   log_success "Dotfiles installed successfully!"
 }
+
+# Note: After installation, use the following commands to manage your dotfiles:
+# - yadm status                 # Check for changes
+# - yadm add [file]             # Track a file
+# - yadm commit -m "message"    # Commit changes
+# - yadm push                   # Push changes to remote repository
+# - yadm pull                   # Get the latest updates
 
 main() {
   echo "========================================"
@@ -136,7 +165,8 @@ main() {
   echo ""
   echo "========================================"
   log_success "Installation complete!"
-  log_info "You may need to restart your shell or open a new terminal window for all changes to take effect."
+  log_info "Please restart your shell or open a new terminal window for all changes to take effect."
+  log_info "Use 'source ~/.zshrc' to reload without restarting."
   echo "========================================"
 }
 
