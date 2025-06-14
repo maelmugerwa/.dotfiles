@@ -140,11 +140,15 @@ handle_ssh_key() {
   
   # Test SSH connection
   log_info "Testing SSH connection to GitHub with $key_name key..."
-  if ssh -T -o StrictHostKeyChecking=accept-new git@$host_alias 2>&1 | grep -q "success"; then
-    log_success "Successfully connected to GitHub with $key_name key!"
-  else
-    log_warn "Could not verify connection to GitHub with $key_name key. You may need to add it manually."
-  fi
+  echo "Command output (you may see locale warnings that can be safely ignored):"
+  echo "-----------------------------------------------------------------"
+  # Run SSH test and capture the complete output
+  ssh -T -o StrictHostKeyChecking=accept-new git@$host_alias 2>&1
+  echo "-----------------------------------------------------------------"
+  log_info "GitHub typically responds with a message containing 'successfully authenticated'"
+  log_info "Even if you see locale warnings, the connection is successful if that message appears"
+  echo ""
+  read -p "Press Enter to continue..."
 }
 
 # Handle SSH directory and config permissions
