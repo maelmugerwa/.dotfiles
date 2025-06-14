@@ -101,38 +101,81 @@ if [ ! -d "$HOME/.local/bin" ]; then
   log_success "Local bin directory created!"
 fi
 
-# Generate SSH key if none exists
-if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
-  log_info "No SSH key found, generating one..."
-  mkdir -p "$HOME/.ssh"
-  ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)" -f "$HOME/.ssh/id_ed25519" -N ""
-  chmod 700 "$HOME/.ssh"
-  chmod 600 "$HOME/.ssh/id_ed25519"
-  chmod 644 "$HOME/.ssh/id_ed25519.pub"
-  log_success "SSH key generated!"
+# Function for handling SSH key generation and setup
+handle_ssh_key() {
+  local key_path="$1"
+  local key_name="$2"
+  local host_alias="$3"
+  local key_comment="$4"
   
-  # Setup SSH config with sensible defaults if it doesn't exist
-  if [ ! -f "$HOME/.ssh/config" ]; then
-    log_info "Creating SSH config with sensible defaults..."
-    cat > "$HOME/.ssh/config" << EOL
-Host *
-  AddKeysToAgent yes
-  IdentityFile ~/.ssh/id_ed25519
-  HashKnownHosts yes
-  ServerAliveInterval 60
-EOL
-    chmod 600 "$HOME/.ssh/config"
-    log_success "SSH config created!"
+  # Generate key if it doesn't exist
+  if [ ! -f "$key_path" ]; then
+    log_info "No $key_name SSH key found, generating one..."
+    ssh-keygen -t ed25519 -C "$key_comment" -f "$key_path" -N ""
+    chmod 600 "$key_path"
+    chmod 644 "${key_path}.pub"
+    log_success "$key_name SSH key generated!"
   fi
   
-  # Encrypt sensitive files with yadm
-  log_info "Setting up yadm encryption for sensitive files..."
-  mkdir -p "$HOME/.config/yadm"
-  echo ".ssh/id_ed25519" >> "$HOME/.config/yadm/encrypt"
-  echo ".ssh/config" >> "$HOME/.config/yadm/encrypt"
-  yadm encrypt
-  log_success "yadm encryption configured!"
+  # Display and copy key
+  log_info "Add your $key_name SSH key to GitHub:"
+  echo ""
+  cat "${key_path}.pub"
+  echo ""
+  
+  # Copy key to clipboard based on available tools
+  if command -v xclip &> /dev/null; then
+    xclip -selection clipboard < "${key_path}.pub"
+    log_success "$key_name key copied to clipboard using xclip!"
+  elif command -v wl-copy &> /dev/null; then
+    wl-copy < "${key_path}.pub"
+    log_success "$key_name key copied to clipboard using wl-copy!"
+  elif command -v pbcopy &> /dev/null; then
+    pbcopy < "${key_path}.pub"
+    log_success "$key_name key copied to clipboard using pbcopy!"
+  else
+    log_info "No clipboard tool found. Please manually copy the $key_name key shown above."
+  fi
+  
+  log_info "Add this $key_name key to GitHub: https://github.com/settings/ssh/new"
+  read -p "Press Enter after adding the $key_name key to GitHub (or Ctrl+C to skip this step)..."
+  
+  # Test SSH connection
+  log_info "Testing SSH connection to GitHub with $key_name key..."
+  if ssh -T -o StrictHostKeyChecking=accept-new git@$host_alias 2>&1 | grep -q "success"; then
+    log_success "Successfully connected to GitHub with $key_name key!"
+  else
+    log_warn "Could not verify connection to GitHub with $key_name key. You may need to add it manually."
+  fi
+}
+
+# Handle SSH directory and config permissions
+if [ ! -d "$HOME/.ssh" ]; then
+  mkdir -p "$HOME/.ssh"
+  log_info "Created missing ~/.ssh directory"
 fi
+chmod 700 "$HOME/.ssh"  # Ensure correct permissions
+
+# Ensure the SSH config has proper permissions
+if [ -f "$HOME/.ssh/config" ]; then
+  chmod 600 "$HOME/.ssh/config"
+  log_info "SSH config found, permissions set to 600"
+fi
+
+# SSH config explanation
+log_info "Found SSH config with support for multiple GitHub accounts"
+log_info "- Primary account: git clone git@github.com:username/repo.git"
+log_info "- Secondary account: git clone git@github-2:username/repo.git"
+
+# Handle primary key
+handle_ssh_key "$HOME/.ssh/id_ed25519" "PRIMARY" "github.com" "primary@$(hostname)"
+
+# Handle secondary key
+handle_ssh_key "$HOME/.ssh/id_ed25519-2" "SECONDARY" "github-2" "secondary@$(hostname)"
+
+log_info "SSH setup complete! You can now use different GitHub accounts:"
+log_info "- Primary: git clone git@github.com:username/repo.git"
+log_info "- Secondary: git clone git@github-2:username/repo.git"
 
 # Create .gitconfig if it doesn't exist
 if [ ! -f "$HOME/.gitconfig" ]; then

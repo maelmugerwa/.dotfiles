@@ -121,13 +121,50 @@ If `yadm bootstrap` isn't running automatically after cloning:
 
 The `.zshrc` file includes a special section at the end for content that may be auto-added by tools. Periodically check this section and move entries to their appropriate configuration files.
 
+### Multiple GitHub Accounts
+
+This dotfiles repository includes a preconfigured SSH config file (`.ssh/config`) that supports two GitHub accounts:
+
+1. **Primary account**: Uses `~/.ssh/id_ed25519`
+   - Used for normal GitHub operations: `git clone git@github.com:username/repo.git`
+
+2. **Secondary account**: Uses `~/.ssh/id_ed25519-2`
+   - Used with the `github-2` host alias: `git clone git@github-2:username/repo.git`
+
+The bootstrap script:
+- Generates both SSH keys if they don't exist
+- Sets appropriate permissions on keys and the config file
+- Prompts you to add each key to your GitHub accounts
+- Tests connectivity to GitHub for each key
+
+To manually test connectivity:
+```bash
+# Test primary account
+ssh -T git@github.com
+
+# Test secondary account
+ssh -T git@github-2
+```
+
+When working with repositories from your secondary account, remember to:
+```bash
+# Clone from secondary account
+git clone git@github-2:username/repo.git
+
+# Or change remote on existing repo to use secondary account
+git remote set-url origin git@github-2:username/repo.git
+```
+
 ## Advanced Operations
 
-### Encrypting Sensitive Files
+### Optional: Enabling YADM Encryption
 
-1. Add patterns to the encrypt file:
+By default, this dotfiles setup doesn't use YADM's encryption feature to simplify the setup process. However, if you have sensitive files you'd like to encrypt:
+
+1. Add file patterns to the encrypt file:
    ```bash
    echo ".ssh/config" >> ~/.config/yadm/encrypt
+   echo "path/to/sensitive/file" >> ~/.config/yadm/encrypt
    ```
 
 2. Encrypt the files:
@@ -139,6 +176,26 @@ The `.zshrc` file includes a special section at the end for content that may be 
    ```bash
    yadm decrypt
    ```
+
+**Troubleshooting GPG:**  
+If you encounter errors like `Inappropriate ioctl for device` when encrypting:
+
+- Set TTY for GPG:
+  ```bash
+  export GPG_TTY=$(tty)
+  echo "UPDATESTARTUPTTY" | gpg-connect-agent > /dev/null 2>&1
+  ```
+
+- Install appropriate pinentry programs:
+  - For GUI environments: `sudo apt install pinentry-gtk2` (Debian/Ubuntu)
+  - For terminal environments: `sudo apt install pinentry-tty` (Debian/Ubuntu)
+  - For macOS: `brew install pinentry-mac`
+
+- Configure GPG to use the right pinentry:
+  ```bash
+  echo "pinentry-program /usr/bin/pinentry-tty" > ~/.gnupg/gpg-agent.conf
+  gpgconf --kill gpg-agent
+  ```
 
 ### Using Alternative Files
 
