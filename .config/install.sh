@@ -319,8 +319,8 @@ clone_dotfiles() {
   
   # Clone the repository and let YADM handle bootstrap automatically
   log_info "Cloning repository and responding to bootstrap prompt..."
-  # Use yes to automatically answer 'y' to bootstrap prompt
-  yes | yadm clone "$REPO_URL"
+  # Answer 'y' to bootstrap prompt
+  yadm clone "$REPO_URL"
   
   log_success "Dotfiles installed successfully!"
 }
