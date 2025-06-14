@@ -1,0 +1,270 @@
+# ADD USEFUL ALIASES HERE FOR QUICK ACCESS
+# bball='brc --allPackages'
+# recbb='brazil-recursive-cmd --allPackages brazil-build build'
+# recclean='brazil-recursive-cmd -all "bb clean & bb"'
+# searchVs
+# newWs
+# unitTest
+# inLive
+# awsCreds - ada creds for CAZ
+# setBlendedSkills
+# clearAgentSkills
+# edaNew
+
+# crebase = "rebase --current-package"
+# cpush = "push --current-package"
+# cmerge = "merge --current-package"
+# b = "build --silent brazil-build build"
+# br = "build --silent brazil-build release"
+# test = "build --silent brazil-build test"
+# cbr = "script /bin/zsh -c set -x; brazil ws --sync --md && brazil ws clean && eda br"
+# pl = "run git pull --rebase --autostash"
+# morning = "script /bin/zsh -c set -x; eda pl && eda cbr"
+# morning2 = "script /bin/zsh -c set -x; eda dirty-rebase && eda cbr"
+# reset = "script /bin/zsh -c set -x; mainline && eda dirty-rebase && eda cbr"
+# st = "script /bin/zsh -c eda run git -c color.status=always status | awk '/●/ { if (NR == 1) { printf \"%s\\n\",$0 } else { printf \"\\n%s\\n\",$0  } }; !/●/ && !/^$/ && !/use \"git / { printf \"    %s\\n\",$0 }; END { printf \"\\n\" }'"
+# log = "run git log --max-count=5 --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit | cat"
+# status = "script /bin/zsh -c set -x; eda fetch && eda st"
+# more eda @ https://code.amazon.com/packages/Eda/trees/mainline
+
+# start remote-component
+RC() { #$1 is first arg (here: port number)
+    kill $(lsof -t -i:"${1:-9091}")
+    xdg-open https://localhost:"${1:-9091}"/dist/local/definition.json
+    brazil-build webserver -- --port "${1:-9091}"
+}
+
+fetchStartRC() {
+    cd startRC
+    # for each directory under here, run a command
+    for dir in */; do
+        cd "$dir"
+        echo "Fetching in $dir"
+        rmrf && pl && brazil ws --sync --md && brazil ws clean && b --silent
+        ..
+    done
+}
+
+# start all RCs
+start() {
+    location=""
+    select choice in LDP AppBundle OSC 3p; do
+        case $choice in
+            LDP)
+                cd start/startLDP/src/CSC-UI-DataProxy-Local
+                ldp
+                break
+                ;;
+            AppBundle)
+                cd start/startAppBundle/src/CSC-UI-App-Bundle
+                appBundle
+                break
+                ;;
+            OSC)
+                cd start/startOSC/src/CSC-UI-Widget-SolveCard-OrderRetail
+                RC 9092
+                break
+                ;;
+            3p)
+                cd start/start3p/src/CSC-UI-Widget-3pResolutionWorkflow
+                RC 9091
+                break
+                ;;
+            *) echo "invalid option $REPLY";;
+        esac
+    done
+}
+
+searchVs() {
+    vs=""
+    select choice in live OSC 3p other; do
+        case $choice in
+            live)
+                vs="live"
+                break
+                ;;
+            OSC)
+                vs="CSCUISolveCardOrderRetailCDK/development"
+                break
+                ;;
+            3p)
+                vs="CSCUI3pResolutionWorkflowCDK/development"
+                break
+                ;;
+            other)
+                echo "Enter version set name: "; read vs;
+                break
+                ;;
+            *) echo "invalid option $REPLY";;
+        esac
+    done
+    echo "Enter what you want to search for: "
+    read search
+    command="brazil vs print --versionSet ${vs} | grep -i ${search}"
+    echo "\n"; echo "$command"; eval "$command"
+}
+
+appBundle(){
+    kill $(lsof -t -i:"9090")
+    command='brazil-build server'
+    if read -qs "choice?Press Y/y to use local data proxy"; then
+        xdg-open https://localhost:9090/
+        echo ""; command+=' -- --local-data-proxy="https://localhost:32323/graphql"'
+    else
+        xdg-open https://ac3-test.aka.corp.amazon.com:9090/
+        command+='-ws'
+    fi
+    echo "\n"; echo "$command"; eval "$command"
+}
+
+# yarn test specific tests
+unitTest(){
+    command='yarn test '
+    select choice in specificFile specificName; do
+        case $choice in
+            specificFile)
+                read "path?Enter complete file path? "; command+="-i ${path}"
+                break
+                ;;
+            specificName)
+                read "path?Enter specific test name? "; command+="-t \"${path}\""
+                break
+                ;;
+            *) echo "invalid option $REPLY";;
+        esac
+    done
+    echo "\n"; echo "$command"; eval "$command"
+}
+
+# clean workspace
+cleanReset(){
+    brazil-recursive-cmd -all --continue "git restore package-lock.json"
+    brazil-recursive-cmd -all --continue "git stash"
+    brazil-recursive-cmd -all --continue "git pull -r"
+    brazil-recursive-cmd -all --continue "git stash pop"
+    brazil ws clean
+    brazil ws --sync --md
+    brazil-recursive-cmd --allPackages brazil-build release
+    bb
+}
+
+# completely reset workspace
+old_reset(){
+    brazil-recursive-cmd -all --continue "git reset --hard"
+    brazil-recursive-cmd -all --continue "git clean -fd"
+    brazil-recursive-cmd -all --continue "git checkout mainline"
+    brazil-recursive-cmd -all --continue "git fetch origin mainline  && git reset --hard origin/mainline"
+    brazil-recursive-cmd -all --continue "rimraf node_modules dist coverage build"
+    brazil ws clean
+    brazil ws sync
+    brazil-recursive-cmd --allPackages brazil-build
+}
+
+# local data proxy
+ldp(){
+    kill $(lsof -t -i:"32323")
+    xdg-open https://localhost:32323/graphql
+    brazil-build watch-secure
+}
+
+# Run automated tests
+ATs() {
+    command="bb"
+    select choice in local beta gamma prod; do
+        case $choice in
+            local)
+                command+=" run-local-tests -- --pwa-launch-url https://local-release.testing.aviary.cs.amazon.dev/"
+                break
+                ;;
+            beta)
+                command+=" run-beta-tests -- --pwa-launch-url https://beta-release.testing.aviary.cs.amazon.dev/"
+                break
+                ;;
+            gamma)
+                command+=" run-gamma-tests -- --pwa-launch-url https://gamma-release.testing.aviary.cs.amazon.dev/"
+                break
+                ;;
+            prod)
+                command+=" run-prod-tests -- --pwa-launch-url https://prod-release.testing.aviary.cs.amazon.dev/"
+                break
+                ;;
+            *) echo "invalid option $REPLY";;
+        esac
+    done
+    if read -qs "choice?Press Y/y to test in docker"; then
+        echo ""; command+=" --docker"
+    fi; echo ""
+    if read -qs "choice?Press Y/y to test with devtools (debug)"; then
+        echo ""; command+=" --keepChromeDriverSessionAlive"
+    fi; echo "\n"
+    if read -qs "choice?Press Y/y to add rc metadata @9092"; then
+        # echo ""; read "rc?Which rc? "; command+=" --rc-metadata \"{\\\"solve-card-order-retail\\\":\\\"https://localhost:9091/dist/local/definition.json\\\"}\" --rc-metadata \"{\\\"${rc}\\\":\\\"https://localhost:9092/dist/local/definition.json\\\"}\""
+        echo ""; read "rc?Which rc? "; command+=" --rc-metadata \"{\\\"${rc}\\\":\\\"https://localhost:9092/dist/local/definition.json\\\"}\""
+    fi; echo ""
+    while read -qs "choice?Press Y/y to add @tags to watch"; do
+        echo ""; read "tag?Which @tag? "; command+=" --cucumber-tags ${tag}"
+    done; echo ""
+    while read -qs "choice?Press Y/y to add filepath to watch"; do
+        echo ""; read "filepath?Which filepath? "; command+=" --cucumber-args ${filepath}"
+    done; echo ""
+    # while read -qs "choice?Press Y/y to add feature to watch"; do
+    #     echo ""; read "feature?Which feature?"; command+=" --feature ${feature}"
+    # done; echo ""
+    echo "\n\n$command\n\n"; eval "$command"
+}
+
+# Show test reports in CSC-UI-App-ATs
+# for other's just go to ATpkg/build/brazil-acceptance-tests and click GoLive extension bottom right
+alias reports='
+    xdg-open https://localhost:8080/
+    bb serve-reports
+'
+
+# set agent skills in local
+setAgentSkills() {
+    echo "Enter skillName: " 
+    read name
+    echo "Enter skillId: " 
+    read id
+    command="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'skillName="${name}"' \
+        --data-urlencode 'skillId="${id}"'"
+    echo "$command"; eval "$command"
+}
+
+setBlendedSkills(){
+        #   | HBS           | 30378241 |
+        #   | LuxuryStores  | 32591571 |
+        #   | PrimeWardrobe | 48781    |
+        hbs="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'skillName=HBS' \
+        --data-urlencode 'skillId=Id=HBS_CA'"
+        tbyb="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'skillName=TBYB' \
+        --data-urlencode 'skillId=Id=PrimeWardrobe'"
+        lux="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        --header 'Accept: application/json' \
+        --header 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'skillName=LuxuryStores' \
+        --data-urlencode 'skillId=Id=LuxuryStores'"
+    eval "$hbs"
+    eval "$tbyb"
+    eval "$lux"
+}
+
+# clear agent skills in local
+clearAgentSkills() {
+    command="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/clear-agent-skill' \
+--header 'Accept: application/json'"
+    echo "$command"; eval "$command"
+}
+
+# Local App Bundle calls local data proxy
+export CSC_UI_LOCAL_DATA_PROXY='https://localhost:32323'
+

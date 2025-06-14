@@ -1,0 +1,45 @@
+# Homebrew Bundle - Automated package installation
+tap "homebrew/bundle"
+
+# Core development tools
+brew "gcc"                        # GNU compiler collection
+brew "git"                        # Version control system
+brew "gh"                         # GitHub CLI
+brew "yadm"                       # Yet Another Dotfiles Manager
+
+# Shell and terminal enhancements
+brew "zsh"                        # Z Shell - powerful interactive shell
+brew "zsh-completions"            # Additional completions for zsh
+brew "zsh-autosuggestions"        # Fish-like autosuggestions for zsh
+brew "zsh-syntax-highlighting"    # Syntax highlighting for zsh
+brew "starship"                   # Cross-shell prompt with minimal, blazing-fast performance
+brew "fzf"                        # Fuzzy finder for command-line
+brew "thefuck"                    # Command correction tool
+brew "direnv"                     # Environment switcher for the shell
+brew "atuin"                      # Magical shell history with search, stats, and sync
+brew "zoxide"                     # Smarter cd command that learns your habits
+
+# Modern CLI replacements
+brew "bat"                        # Cat clone with syntax highlighting
+brew "eza"                        # Modern replacement for ls
+brew "fd"                         # Simple, fast alternative to find
+brew "ripgrep"                    # Fast grep alternative
+brew "difftastic"                 # Structural diff tool that understands syntax
+
+# Terminal UI tools
+brew "lazygit"                    # Terminal UI for git commands
+brew "lazydocker"                 # Terminal UI for docker management
+brew "btop"                       # Resource monitor with visuals and customization
+brew "neovim"                     # Hyperextensible Vim-based text editor
+
+# Data processing tools
+brew "jq"                         # Command-line JSON processor
+brew "httpie"                     # User-friendly HTTP client
+
+# Development environment managers
+brew "fnm"                        # Fast Node.js version manager (alternative to nvm)
+brew "pyenv"                      # Python version manager
+
+# Utilities
+brew "just"                       # Modern command runner (alternative to make)
+brew "mcfly"                      # Smart search for shell history

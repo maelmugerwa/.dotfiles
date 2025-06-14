@@ -1,0 +1,315 @@
+# Contains useful aliases + functions for all clouddesk use cases
+
+### START Default Clouddesk Config Block ###
+export BRAZIL_WORKSPACE_DEFAULT_LAYOUT=short
+
+export AUTO_TITLE_SCREENS="NO"
+
+# if you wish to use IMDS set AWS_EC2_METADATA_DISABLED=false
+export AWS_EC2_METADATA_DISABLED=true
+
+ssh() {
+    set-title $*;
+    /usr/bin/ssh -2 $*;
+    set-title $HOST;
+}
+
+# AAA
+alias register-with-aaa="/apollo/env/AAAWorkspaceSupport/bin/register_with_aaa.py"
+
+# Function to send Slack notification
+slack() {
+    local pwd=$1
+    local command=$2
+    local exit_status=$3
+    local duration=$4
+    local hostname=$(hostname)
+
+    # Remove '/workplace/maelmug' from the pwd
+    local short_pwd=${pwd#/workplace/maelmug}
+
+    # Convert duration to minutes and seconds
+    local minutes=$((duration / 60))
+    local seconds=$((duration % 60))
+
+    # Construct the message based on exit status
+    local content
+    if [[ $exit_status -eq 0 ]]; then
+        content="Success! :tada:"
+    else
+        content="Failed with code $exit_status! :fire:"
+    fi
+
+    WEBHOOK="REDACTED_SLACK_WEBHOOK_URL" # Replace with your actual webhook URL when needed
+    curl -X POST "$WEBHOOK" \
+         -H "Content-Type: application/json" \
+         --data "{\"Message\":\"$content (${minutes}m ${seconds}s)\", \"pwd\": \"$short_pwd\", \"command\": \"$command\"}"
+}
+
+# Wrap brazil-build function
+brazil-build-wrapper() {
+    local start_time=$(date +%s)
+    local pwd=$(pwd)
+    local full_command="brazil-build $*"
+
+    # Call the original brazil-build function
+    command brazil-build "$@"
+    local exit_status=$?
+
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+
+    # Send notification to Slack
+    slack "$pwd" "$full_command" "$exit_status" "$duration"
+
+    return $exit_status
+}
+
+# Set up alias to use the wrapper
+alias brazil-build='brazil-build-wrapper'
+
+# brazil aliases
+alias e='emacs'
+alias bb='brazil-build'
+alias bba='brazil-build apollo-pkg'
+alias bre='brazil-runtime-exec'
+alias brc='brazil-recursive-cmd'
+alias bws='brazil ws'
+alias bwsuse='bws use -p'
+alias bwscreate='bws create -n'
+alias brc='brazil-recursive-cmd'
+alias bbr='brc brazil-build'
+alias bball='brc -all --continue'
+alias bbb='brc --allPackages brazil-build'
+alias bbra='bbr apollo-pkg'
+# recursive bb
+alias recclean='brazil-recursive-cmd -all "bb clean & bb"'
+
+# compact git log
+alias glo="git log --max-count=5 --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
+# eda aliases
+alias crebase="eda rebase --current-package"
+alias cpush="eda push --current-package"
+alias cmerge="eda merge --current-package"
+
+# wrap eda build functions to send notifications
+b() { # ex: b --silent release
+    local start_time=$(date +%s)
+    local pwd=$(pwd)
+    local full_command="eda build"
+    local silent=false
+
+    # Check for --silent argument
+    if [[ "$1" == "--silent" ]]; then
+        silent=true
+        shift  # Remove --silent from the arguments
+    fi
+
+    # Construct the command
+    if $silent; then
+        full_command+=" --silent"
+        command eda build --silent brazil-build "$@"
+    else
+        command eda build brazil-build "$@"
+    fi
+
+    local exit_status=$?
+
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+
+    # Send notification to Slack
+    slack "$pwd" "$full_command" "$exit_status" "$duration"
+
+    return $exit_status
+}
+alias c="brazil ws --sync --md && brazil ws clean"
+alias cb="brazil ws --sync --md && brazil ws clean && b"
+alias cbr="brazil ws --sync --md && brazil ws clean && b release"
+alias pl="eda run git pull --rebase --autostash"
+alias lock="eda run git checkout mainline -- package-lock.json || true"
+alias rmrf="eda run rimraf node_modules dist coverage build"
+alias morning="lock && pl && cb"
+alias morning2="eda dirty-rebase && cb"
+alias reset="mainline && rmrf && morning"
+alias log="eda run git log --max-count=5 --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset%n' --abbrev-commit | cat"
+alias st="eda st"
+alias status="eda fetch && eda st"
+
+### END Default Clouddesk Config Block ###
+
+# cd will search through current folder & workplace code folders
+export cdpath=( .
+${HOME}
+${ZSH_CUSTOM}
+${HOME}/workplace
+${HOME}/workplace/*
+${HOME}/workplace/start/*
+${HOME}/workplace/start/*/src
+${HOME}/workplace/*/src
+)
+
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+
+# thefuck setup
+eval $(thefuck --alias fk)
+
+# Set up mise for runtime management
+eval "$(/home/maelmug/.local/bin/mise activate zsh)"
+source ~/.local/share/mise/completions.zsh
+autoload -Uz compinit && compinit
+source /home/maelmug/.brazil_completion/zsh_completion
+
+# Set PATH, MANPATH, etc., for Homebrew.
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Add envImprovement to PATH
+export PATH=$PATH:/apollo/env/envImprovement/bin
+
+# Export var for Sable RestClientCLI
+export APOLLO_STARTUP_ENVIRONMENT_ROOT=/apollo/env/RestClientUtils
+
+# docker RDE setup https://builderhub.corp.amazon.com/docs/rde/cli-guide/setup-post.html
+fpath=(~/.zsh/completion $fpath)
+autoload -Uz compinit && compinit -i
+
+# Amazon eda autocomplete files - https://code.amazon.com/packages/Eda/trees/mainline
+export EDA_AUTO="$HOME/.config/eda/completion"
+mkdir -p $EDA_AUTO
+eda completions zsh > $EDA_AUTO/_eda
+fpath=($EDA_AUTO $fpath)
+autoload -Uz compinit
+compinit
+
+# Add NodeJS binary to PATH - Consumable Environments
+export PATH=$PATH:/apollo/env/NodeJS/bin
+
+# Add Redfort/Odin Certificate to environment variables:
+export CSC_UI_ODIN_MATERIAL_SET="com.amazon.certificates.maelmug.aka.corp.amazon.com-STANDARD_SSL_SERVER_INTERNAL_ENDPOINT-RSA"
+
+# Add java home to path https://w.amazon.com/bin/view/JDKTeam/OpenJDK/DevDesktops/#HOption12013ManageWith2B
+# export JAVA_HOME=$(dirname $(dirname $(realpath /usr/bin/java)))
+export PATH=$JAVA_HOME/bin:$PATH
+
+# on context change (ex: on cd) call ls
+chpwd() ls -F
+
+# midway + kerberos auth
+alias auth='mwinit -o -s'
+alias login='kinit -f && mwinit -o -s'
+
+# reload zhsrc
+reload() {
+    source ~/.zshrc >/dev/null 2>&1
+}
+
+# java alias
+alias print-java-version='printf "\n☕️ Java\n\n" && which java && java -version'
+alias switch-java-version='sudo alternatives --config java && source ~/.zshrc'
+
+# create brazil ws
+newWs(){
+    # cd ~/workplace
+    echo "Enter workspace name: "
+    read name
+    echo "Enter package(s) name(s): "
+    read package
+    brazil ws create --name "${name}"
+    cd "${name}"
+    brazil ws use -p ${package}
+    eda build brazil-build release
+    code .
+}
+
+# create brazil ws from pipeline
+edaNew(){
+    cd ~/workplace
+    echo "Enter workspace name: "
+    read name
+    echo "Enter pipeline name: "
+    read pipeline
+    eda create --name "${name}" --pipeline "${pipeline}"
+    cd "${name}"
+    eda build brazil-build release
+    code .
+}
+
+# clean workspace to mainline
+mainline(){
+    brazil-recursive-cmd -all --continue "git checkout mainline"
+    brazil-recursive-cmd -all --continue "git reset --hard origin/mainline"
+    brazil-recursive-cmd -all --continue "git clean -fd"
+}
+
+# eda reset
+alias edaReset='mainline && eda morning'
+
+# is package in live?
+inLive(){
+    command='brazil pkg print -vs live -p '
+    read "packageName?Which packageName? "; command+="${packageName}"
+    read "versionNumber?Which versionNumber? "; command+=" --mv ${versionNumber}"
+    echo "$command\n"; eval "$command"
+}
+
+# kill port
+killPort() { #$1 is first arg (here: port number)
+    kill $(lsof -t -i:"${1}")
+}
+
+# recreate test workspace
+resetTest() {
+    echo "Enter package name: "
+    read package
+    cd ~/workplace
+    rm -rf test
+    brazil ws create --name test
+    cd test
+    command="brazil ws use -p "${package}
+    echo "$command"; eval "$command"
+    cd "src/${package}"
+    bb
+    code .
+}
+
+# request AWS credentials
+awsCreds() {
+    echo "Enter AWS Account ID: " 
+    read awsID
+    xdg-open https://conduit.security.a2z.com/accounts/aws/"${awsID}"/mpa
+    echo "Enter Review ID: " 
+    read reviewID
+    command="ada credentials update --account="${awsID}" --provider=conduit --role=IibsAdminAccess-DO-NOT-DELETE --profile=default --once --2pr="${reviewID}
+    echo "$command"; eval "$command"
+}
+
+# cleanup clouddesk
+cleanClouddesk() {
+    # install and use ncdu to find and delete large files
+    # sudo rpm -Uvh http://archives.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
+    # sudo yum clean all
+    # sudo yum makecache
+    # sudo yum install -y ncdu
+
+    # free up space https://w.amazon.com/bin/view/AWS/IoT/Rules/Tutorials/cleanclouddesktopspace/
+    if read -qs "choice?Press Y/y to prune docker"; then
+        sudo docker system prune -a -f
+    fi; echo "\n"
+    if read -qs "choice?Press Y/y to clean brazil cache"; then
+        brazil-package-cache clean --days 0 --keepCacheHours 0
+    fi; echo "\n"
+}
+
+# Enable autocompletion for mechanic.
+[ -f "$HOME/.local/share/mechanic/complete.zsh" ] && source "$HOME/.local/share/mechanic/complete.zsh"
+
+# Remove autocorrection to unblock Cline running
+unsetopt correct_all
+
+# TODO, add support for brazil cli dryrun https://w.amazon.com/bin/view/AmazonPay/CorePlatformSupport/SOP/LiveMergeUsingBrazilCLI/
+
+# Add .NET SDK to PATH
+export DOTNET_ROOT=$HOME/.dotnet
+export PATH=$PATH:$HOME/.dotnet

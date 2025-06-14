@@ -1,0 +1,4 @@
+.ssh/id_ed25519
+.ssh/config
+.ssh/id_rsa
+.gnupg/*.gpg

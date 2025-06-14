@@ -1,0 +1,301 @@
+# ============================================================================
+# USER CONFIGURATION
+# ============================================================================
+
+[user]
+  # Replace with your actual name and email
+  # This identifies you as the author of your commits
+  name = Your Name
+  email = your.email@example.com
+
+# ============================================================================
+# CORE SETTINGS
+# ============================================================================
+
+[core]
+  # Default text editor for commit messages and interactive commands
+  editor = vim
+  
+  # Location of the global gitignore file
+  excludesFile = ~/.gitignore
+  
+  # Use delta for enhanced diffs (colors, line numbers)
+  pager = delta
+  
+  # Normalize line endings to LF on commit but don't convert on checkout
+  # Use this for cross-platform projects
+  autocrlf = input
+  
+  # Fix and warn about whitespace errors
+  # - trailing-space: warn about trailing whitespaces
+  # - space-before-tab: warn about spaces before tabs
+  # - indent-with-non-tab: warn about using spaces for indentation
+  whitespace = fix,space-before-tab,indent-with-non-tab,trailing-space
+
+# ============================================================================
+# INITIALIZATION SETTINGS
+# ============================================================================
+
+[init]
+  # Set default branch name for new repositories
+  # This follows the more inclusive naming convention
+  defaultBranch = main
+
+# ============================================================================
+# PULL SETTINGS
+# ============================================================================
+
+[pull]
+  # Don't rebase when pulling by default
+  # Set to 'true' if you prefer to rebase on pull
+  rebase = false
+
+# ============================================================================
+# PUSH SETTINGS
+# ============================================================================
+
+[push]
+  # Push only the current branch to the upstream branch
+  default = simple
+  
+  # Automatically set remote tracking when pushing new branches
+  # Eliminates the need for '--set-upstream' on first push
+  autoSetupRemote = true
+
+# ============================================================================
+# COLOR SETTINGS
+# ============================================================================
+
+[color]
+  # Enable colors in Git output
+  ui = auto
+
+# ============================================================================
+# ALIASES - QUICK COMMANDS FOR COMMON OPERATIONS
+# ============================================================================
+
+[alias]
+  # ==========================================================================
+  # STATUS & INFORMATION COMMANDS
+  # ==========================================================================
+  
+  # Short status - Compact view showing changed files only
+  # Use when: You need a quick overview of what's changed
+  # Example: git s
+  s = status -s
+  
+  # Regular status with full details
+  # Use when: You want detailed information about working directory state
+  # Example: git st
+  st = status
+  
+  # Alternative name for status
+  # Use when: Muscle memory from other tools or typos
+  # Example: git stat
+  stat = status
+  
+  # ==========================================================================
+  # BRANCHING OPERATIONS
+  # ==========================================================================
+  
+  # Quick checkout - Switch to another branch
+  # Use when: You need to change branches
+  # Example: git co main
+  co = checkout
+  
+  # Create and checkout a new branch
+  # Use when: Starting new feature or bugfix work
+  # Example: git cb feature/new-login-ui
+  cb = checkout -b
+  
+  # List local branches
+  # Use when: You need to see what branches exist locally
+  # Example: git b
+  b = branch
+  
+  # List all branches (local and remote)
+  # Use when: You need to see all existing branches, including remote branches
+  # Example: git branches
+  branches = branch -a
+  
+  # ==========================================================================
+  # COMMIT OPERATIONS
+  # ==========================================================================
+  
+  # Commit with message - Create a new commit with the specified message
+  # Use when: Committing changes with a simple message
+  # Example: git cm "Add login button styling"
+  cm = commit -m
+  
+  # Amend previous commit with staged changes
+  # Use when: Fixing or improving your most recent commit
+  # Example: git ca
+  ca = commit --amend
+  
+  # Amend previous commit without changing the commit message
+  # Use when: Adding forgotten changes to the previous commit
+  # Example: git amend
+  amend = commit --amend --no-edit
+  
+  # ==========================================================================
+  # STAGING OPERATIONS
+  # ==========================================================================
+  
+  # Add all changes to staging
+  # Use when: You want to stage all modified and untracked files
+  # Example: git aa
+  aa = add -A
+  
+  # Interactive patch mode - stage specific parts of files
+  # Use when: You want to split a file's changes into multiple commits
+  # Example: git ap
+  ap = add -p
+  
+  # ==========================================================================
+  # LOG & HISTORY VIEWING
+  # ==========================================================================
+  
+  # Pretty graphical log with branches and commits
+  # Use when: Visualizing project history and branch structure
+  # Example: git lg
+  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  
+  # Simple one-line log entries
+  # Use when: Getting a compact list of recent commits
+  # Example: git ll
+  ll = log --oneline
+  
+  # File history with patches
+  # Use when: Seeing the complete history of a specific file including changes
+  # Example: git history path/to/file.js
+  history = log --follow -p --
+  
+  # Show the most recent commit
+  # Use when: Checking what you just committed
+  # Example: git last
+  last = log -1 HEAD
+  
+  # ==========================================================================
+  # DIFF OPERATIONS
+  # ==========================================================================
+  
+  # Show changes between working directory and last commit
+  # Use when: Reviewing unstaged changes
+  # Example: git d
+  d = diff
+  
+  # Show changes between staging area and last commit
+  # Use when: Reviewing what will be committed next
+  # Example: git ds
+  ds = diff --staged
+  
+  # ==========================================================================
+  # REMOTE OPERATIONS
+  # ==========================================================================
+  
+  # Fetch updates from remotes
+  # Use when: Downloading remote changes without merging
+  # Example: git fet
+  fet = fetch
+  
+  # Short alias for fetch
+  # Use when: Quick fetch operations
+  # Example: git f
+  f = fetch
+  
+  # Pull with rebase and prune
+  # Use when: Updating your branch with remote changes, cleaning up old branches
+  # Example: git up
+  up = !git pull --rebase --prune $@
+  
+  # ==========================================================================
+  # RESET & CLEANUP OPERATIONS
+  # ==========================================================================
+  
+  # Remove files from staging area
+  # Use when: You want to unstage files but keep changes
+  # Example: git unstage file.txt
+  unstage = reset HEAD --
+  
+  # Discard changes in working directory
+  # Use when: Reverting modified files to their committed state
+  # Example: git discard file.txt
+  discard = checkout --
+  
+  # Undo the last commit, keeping changes staged
+  # Use when: You committed too early and want to add more changes
+  # Example: git uncommit
+  uncommit = reset --soft HEAD~1
+  
+  # ==========================================================================
+  # STASH OPERATIONS
+  # ==========================================================================
+  
+  # Save changes to stash
+  # Use when: Temporarily storing changes to switch tasks
+  # Example: git save
+  save = stash push
+  
+  # Apply and remove most recent stash
+  # Use when: Retrieving previously stashed changes
+  # Example: git pop
+  pop = stash pop
+  
+  # List all stashes
+  # Use when: Reviewing what stashes you have available
+  # Example: git list-stash
+  list-stash = stash list
+  
+  # ==========================================================================
+  # FILE MANAGEMENT & INFORMATION
+  # ==========================================================================
+  
+  # Show tracked files in repository
+  # Use when: Seeing what files are being tracked by git
+  # Example: git ls
+  ls = ls-files
+  
+  # Show git configuration
+  # Use when: Checking your global and local git settings
+  # Example: git config-list
+  config-list = config --list
+  
+  # Search in files with line numbers
+  # Use when: Looking for specific code in the repository
+  # Example: git find "function search"
+  find = grep -n
+  
+  # ==========================================================================
+  # REPOSITORY OVERVIEW
+  # ==========================================================================
+  
+  # Comprehensive repository summary
+  # Use when: Getting a high-level view of recent project activity
+  # Example: git overview
+  overview = !git log --stat --since='2 weeks' --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  
+  # Show all configured aliases
+  # Use when: Remembering what aliases are available
+  # Example: git aliases
+  aliases = !git config --get-regexp '^alias\\.' | sed 's/alias\\.\\([^ ]*\\) \\(.*\\)/\\1\\t=> \\2/' | sort
+
+[delta]
+  line-numbers = true
+  side-by-side = false
+  navigate = true
+  light = false
+
+[fetch]
+  prune = true
+
+[diff]
+  colorMoved = default
+
+[merge]
+  conflictstyle = diff3
+
+[rebase]
+  autosquash = true
+
+[help]
+  autocorrect = 10

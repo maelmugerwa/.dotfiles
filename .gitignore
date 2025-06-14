@@ -1,0 +1,31 @@
+# .gitignore - Files to exclude from version control
+
+# Repository setup script (one-time use)
+yadm/setup-repo.sh
+
+# Machine-specific files
+.zshrc.local
+
+# OS and editor files
+.DS_Store
+*.swp
+*.swo
+*~
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Package directories
+node_modules/
+__pycache__/
+*.py[cod]
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Build outputs
+dist/
+build/
