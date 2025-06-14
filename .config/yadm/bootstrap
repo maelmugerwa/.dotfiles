@@ -36,11 +36,6 @@ log_error() {
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
-# Install packages from Brewfile
-log_info "Installing packages from Brewfile..."
-brew bundle --global
-log_success "Packages installed successfully!"
-
 # Setup Homebrew paths
 log_info "Setting up Homebrew in shell configuration..."
 if [[ "$OS" == "Darwin" ]]; then
@@ -60,6 +55,11 @@ else
   fi
 fi
 log_success "Homebrew path configured!"
+
+# Install packages from Brewfile
+log_info "Installing packages from Brewfile..."
+brew bundle --file="$HOME/.config/homebrew/Brewfile"
+log_success "Packages installed successfully!"
 
 # Setup Starship prompt
 if command -v starship &> /dev/null; then
