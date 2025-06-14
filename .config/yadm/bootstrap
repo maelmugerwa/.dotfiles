@@ -134,7 +134,8 @@ handle_ssh_key() {
     pbcopy < "${key_path}.pub"
     log_success "$key_name key copied to clipboard using pbcopy!"
   else
-    log_info "No clipboard tool found. Please manually copy the $key_name key shown above."
+    log_warn "No clipboard tool found despite being in Brewfile. Please manually copy the $key_name key shown above."
+    log_info "Tip: Run 'brew bundle --file=\"$HOME/.config/homebrew/Brewfile\"' to install clipboard tools."
   fi
   
   log_info "Add this $key_name key to GitHub: https://github.com/settings/ssh/new"
