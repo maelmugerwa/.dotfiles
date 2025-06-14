@@ -72,11 +72,11 @@ fi
 
 # Install packages from Brewfile
 log_info "Installing packages from Brewfile..."
-if [ -f "$HOME/.dotfiles/homebrew/Brewfile" ]; then
-  brew bundle install --file="$HOME/.dotfiles/homebrew/Brewfile"
+if [ -f "$HOME/homebrew/Brewfile" ]; then
+  brew bundle install --file="$HOME/homebrew/Brewfile"
   log_success "Packages installed successfully!"
 else
-  log_error "Brewfile not found at ~/.dotfiles/homebrew/Brewfile"
+  log_error "Brewfile not found at ~/homebrew/Brewfile"
   exit 1
 fi
 

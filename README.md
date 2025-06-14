@@ -5,7 +5,7 @@ A comprehensive dotfiles repository managed by [yadm](https://yadm.io/) for quic
 ## Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/maelmugerwa/dotfiles/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/install.sh | bash
 ```
 
 This one-line command will:
@@ -38,9 +38,9 @@ This one-line command will:
 
 2. Clone this repository:
    ```bash
-   yadm clone https://github.com/maelmugerwa/dotfiles.git
+   yadm clone https://github.com/maelmugerwa/.dotfiles.git
 # Or using SSH:
-# yadm clone git@github.com:maelmugerwa/dotfiles.git
+# yadm clone git@github.com:maelmugerwa/.dotfiles.git
    ```
 
 3. Run the bootstrap script:

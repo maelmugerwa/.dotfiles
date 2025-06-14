@@ -34,7 +34,7 @@ OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
 # GitHub repository URL
-REPO_URL="https://github.com/maelmugerwa/dotfiles.git"
+REPO_URL="https://github.com/maelmugerwa/.dotfiles.git"
 
 # Install yadm if not already installed
 install_yadm() {

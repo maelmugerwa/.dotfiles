@@ -42,10 +42,10 @@ To modify an existing component, edit the appropriate file:
 
 ```bash
 # Modify aliases
-vim ~/.dotfiles/zsh/aliases.zsh
+yadm edit ~/zsh/aliases.zsh
 
 # Change prompt configuration
-vim ~/.dotfiles/zsh/prompt.zsh
+yadm edit ~/zsh/prompt.zsh
 ```
 
 No need to edit `.zshrc` directly - it simply loads these modular files.
@@ -60,10 +60,10 @@ If your addition fits into an existing category, add it to the appropriate file:
 
 ```bash
 # Add new aliases
-echo 'alias myalias="command-to-run"' >> ~/.dotfiles/zsh/aliases.zsh
+echo 'alias myalias="command-to-run"' >> ~/zsh/aliases.zsh
 
 # Add new tool integration
-vim ~/.dotfiles/zsh/tools.zsh
+yadm edit ~/zsh/tools.zsh
 ```
 
 For a complete reference of existing aliases, see [ALIASES.md](ALIASES.md).
@@ -74,7 +74,7 @@ For new functionality that doesn't fit existing categories, create a new `.zsh` 
 
 ```bash
 # Create a new configuration file
-vim ~/.dotfiles/zsh/mycustom.zsh
+yadm edit ~/zsh/mycustom.zsh
 ```
 
 Content structure:
@@ -151,7 +151,7 @@ Consider organizing scripts by category:
 Then add these subdirectories to your PATH in a `.zsh` file:
 
 ```bash
-# ~/.dotfiles/zsh/script-paths.zsh
+# ~/zsh/script-paths.zsh
 export PATH="$HOME/.local/bin/dev:$PATH"
 export PATH="$HOME/.local/bin/system:$PATH"
 export PATH="$HOME/.local/bin/utils:$PATH"
@@ -256,7 +256,7 @@ To add new packages to install on all your machines:
 
 ### 1. Edit the Brewfile
 
-Edit `~/.dotfiles/homebrew/Brewfile`:
+Edit `~/homebrew/Brewfile`:
 
 ```ruby
 # Add a new package
@@ -269,13 +269,13 @@ cask "application-name"  # Add a description of the application
 ### 2. Install the New Packages
 
 ```bash
-brew bundle install --file=~/.dotfiles/homebrew/Brewfile
+brew bundle install --file=~/homebrew/Brewfile
 ```
 
 ### 3. Commit Your Changes
 
 ```bash
-yadm add ~/.dotfiles/homebrew/Brewfile
+yadm add ~/homebrew/Brewfile
 yadm commit -m "Add new package to Brewfile"
 yadm push
 ```
