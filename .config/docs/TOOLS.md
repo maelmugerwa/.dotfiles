@@ -16,7 +16,8 @@ This document provides detailed information about the tools included in these do
 [Homebrew](https://brew.sh/) is the package manager used for both macOS and Linux. It allows for consistent package management across different platforms.
 
 - **Brewfile**: Located at `~/.config/homebrew/Brewfile`, it contains all packages to be installed during setup.
-- **Installation**: Handled automatically by the bootstrap script.
+- **Installation**: Automatically installed by the interactive `install.sh` script for both macOS and Linux platforms.
+- **Configuration**: Path is automatically set up based on platform (Intel/ARM macOS or Linux).
 - **Usage**: 
   ```bash
   brew install <package>     # Install a package

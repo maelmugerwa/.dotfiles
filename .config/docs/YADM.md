@@ -33,18 +33,45 @@ $HOME/
 
 ## Initial Setup
 
-The initial setup is handled by `install.sh`, which:
+The initial setup is handled by `install.sh`, which provides an interactive menu with several options:
 
-1. Installs yadm if not present
-2. Backs up any existing dotfiles
-3. Clones the dotfiles repository
-4. Runs the bootstrap script
+1. **Install dotfiles** (standard installation):
+   - Installs Homebrew on both macOS and Linux
+   - Installs yadm using Homebrew
+   - Backs up any existing dotfiles
+   - Clones the dotfiles repository
+   - Runs the bootstrap script
+
+2. **Cleanup previous installation**:
+   - Removes yadm via Homebrew if installed
+   - Cleans up yadm repository data
+
+3. **Restore from backup**:
+   - Lists available backups
+   - Allows selecting and restoring from previous backups
+
+You can also run in non-interactive mode with the `--non-interactive` flag:
+```bash
+./install.sh --non-interactive
+```
 
 ## Testing the Setup
 
 To test the setup process from scratch (for example, after making changes to the bootstrap process):
 
 ### Uninstalling/Resetting YADM
+
+The easiest way to uninstall or reset YADM is to use the cleanup option in the installation script:
+
+```bash
+./install.sh  # Then select option 2 (Cleanup previous installation)
+```
+
+This will:
+1. Remove yadm via Homebrew if installed
+2. Clean up yadm repository data
+
+If you prefer to do it manually:
 
 1. **Remove tracked files**:
    ```bash
@@ -55,28 +82,19 @@ To test the setup process from scratch (for example, after making changes to the
    ```bash
    rm -rf "$HOME/.local/share/yadm/repo.git"  # Remove the Git repository
    rm -rf "$HOME/.config/yadm"                # Remove yadm config
+   rm -rf "$HOME/.local/share/yadm"           # Remove additional yadm data
    ```
 
-3. **Clean up any remaining files**:
+3. **Uninstall yadm**:
    ```bash
-   # Check for broken symlinks
-   find ~/ -maxdepth 1 -type l -exec test ! -e {} \; -print
-   ```
-
-4. **Uninstall yadm (optional)**:
-   ```bash
-   # For Homebrew
    brew uninstall yadm
-   
-   # For apt-based systems
-   sudo apt remove yadm
-   
-   # For dnf-based systems
-   sudo dnf remove yadm
    ```
 
-5. **Start fresh**:
-   After cleaning everything, reinstall yadm and re-run the installation script.
+4. **Start fresh**:
+   After cleaning everything, run the installation script again to start fresh:
+   ```bash
+   ./install.sh
+   ```
 
 ## Troubleshooting
 

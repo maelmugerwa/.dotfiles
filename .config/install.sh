@@ -1,12 +1,25 @@
 #!/usr/bin/env bash
 
-# install.sh - One-click dotfiles installation script
+# install.sh - Interactive dotfiles installation script
 # 
-# This script performs a complete setup of dotfiles and development tools:
-# - Installs yadm (Yet Another Dotfiles Manager) if not already present
-# - Backs up any existing dotfiles to prevent conflicts
-# - Clones the dotfiles repository into the appropriate locations
-# - Runs the bootstrap script to set up tools and configurations
+# This script provides an interactive menu to manage dotfiles:
+# - Install: Complete setup of dotfiles and development tools
+#   * Installs Homebrew package manager (macOS & Linux)
+#   * Installs yadm (Yet Another Dotfiles Manager) using Homebrew
+#   * Backs up existing dotfiles to prevent conflicts
+#   * Clones the dotfiles repository into the appropriate locations
+#   * Runs the bootstrap script for additional setup
+# - Cleanup: Remove previous installations
+#   * Uninstall yadm via Homebrew
+#   * Remove yadm repository data and configuration
+# - Restore: Restore from previous backups
+#   * List and select available backups
+#   * Clean up before restoration to prevent conflicts
+#   * Restore selected files to their original locations
+#
+# Usage:
+#   ./install.sh               # Interactive menu mode
+#   ./install.sh --non-interactive  # Skip the menu, perform standard install
 #
 # Prerequisites:
 # - Git (will be installed by bootstrap script if missing)
@@ -117,6 +130,128 @@ install_yadm() {
   fi
 }
 
+# Clean up previous installations
+cleanup() {
+  log_info "Cleaning up previous installations..."
+  
+  # Remove yadm if installed via brew
+  if command -v yadm &> /dev/null; then
+    log_info "Removing yadm..."
+    brew uninstall yadm 2>/dev/null || true
+  fi
+  
+  # Remove yadm repository data
+  if [[ -d "$HOME/.local/share/yadm" ]]; then
+    log_info "Removing yadm repository data..."
+    rm -rf "$HOME/.local/share/yadm" 2>/dev/null || true
+    rm -rf "$HOME/.config/yadm" 2>/dev/null || true
+  fi
+  
+  log_success "Cleanup completed!"
+}
+
+# Restore from backup
+restore_from_backup() {
+  # Find backup directories
+  backup_dirs=($(find "$HOME" -maxdepth 1 -type d -name "dotfiles_backup_*" | sort -r))
+  
+  if [[ ${#backup_dirs[@]} -eq 0 ]]; then
+    log_error "No backup directories found!"
+    return 1
+  fi
+  
+  echo "Available backups:"
+  for i in "${!backup_dirs[@]}"; do
+    echo "  $((i+1))) ${backup_dirs[$i]} ($(date -r "${backup_dirs[$i]}" "+%Y-%m-%d %H:%M:%S"))"
+  done
+  
+  read -p "Select a backup to restore [1-${#backup_dirs[@]}]: " backup_choice
+  
+  if ! [[ "$backup_choice" =~ ^[0-9]+$ ]] || [ "$backup_choice" -lt 1 ] || [ "$backup_choice" -gt "${#backup_dirs[@]}" ]; then
+    log_error "Invalid selection!"
+    return 1
+  fi
+  
+  selected_backup="${backup_dirs[$((backup_choice-1))]}"
+  
+  # Clean up before restoration to prevent conflicts
+  log_info "Cleaning up before restoration to prevent conflicts..."
+  cleanup
+  
+  log_info "Restoring from $selected_backup..."
+  
+  for file in "$selected_backup"/*; do
+    fname=$(basename "$file")
+    log_info "Restoring $fname to $HOME/$fname"
+    cp -r "$file" "$HOME/$fname"
+  done
+  
+  log_success "Restoration completed!"
+}
+
+# Interactive menu system
+interactive_menu() {
+  clear
+  echo "========================================"
+  echo "     Dotfiles Installation Script       "
+  echo "========================================"
+  echo ""
+  echo "Please select an option:"
+  echo ""
+  echo "1) Install dotfiles (standard installation)"
+  echo "2) Cleanup previous installation"
+  echo "3) Restore from backup"
+  echo "4) Exit"
+  echo ""
+  read -p "Enter your choice [1-4]: " choice
+  
+  case "$choice" in
+    1)
+      install_dotfiles
+      ;;
+    2)
+      cleanup
+      echo ""
+      read -p "Press Enter to return to the menu or Ctrl+C to exit..."
+      interactive_menu
+      ;;
+    3)
+      restore_from_backup
+      echo ""
+      read -p "Press Enter to return to the menu or Ctrl+C to exit..."
+      interactive_menu
+      ;;
+    4)
+      echo "Exiting..."
+      exit 0
+      ;;
+    *)
+      echo "Invalid option. Please try again."
+      sleep 1
+      interactive_menu
+      ;;
+  esac
+}
+
+# Standard installation process
+install_dotfiles() {
+  # Install Homebrew
+  install_homebrew
+  
+  # Install yadm using Homebrew
+  install_yadm
+  
+  # Clone dotfiles
+  clone_dotfiles
+  
+  echo ""
+  echo "========================================"
+  log_success "Installation complete!"
+  log_info "Please restart your shell or open a new terminal window for all changes to take effect."
+  log_info "Use 'source ~/.zshrc' to reload without restarting."
+  echo "========================================"
+}
+
 # Clone dotfiles repository and set up environment
 clone_dotfiles() {
   log_info "Cloning dotfiles repository..."
@@ -164,26 +299,14 @@ clone_dotfiles() {
 # - yadm pull                   # Get the latest updates
 
 main() {
-  echo "========================================"
-  echo "     Dotfiles Installation Script       "
-  echo "========================================"
-  echo ""
+  # Check if non-interactive mode requested
+  if [[ "$1" == "--non-interactive" ]]; then
+    install_dotfiles
+    return
+  fi
   
-  # Install Homebrew
-  install_homebrew
-  
-  # Install yadm using Homebrew
-  install_yadm
-  
-  # Clone dotfiles
-  clone_dotfiles
-  
-  echo ""
-  echo "========================================"
-  log_success "Installation complete!"
-  log_info "Please restart your shell or open a new terminal window for all changes to take effect."
-  log_info "Use 'source ~/.zshrc' to reload without restarting."
-  echo "========================================"
+  # Otherwise show the interactive menu
+  interactive_menu
 }
 
 # Run the main function
