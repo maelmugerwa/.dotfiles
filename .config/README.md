@@ -18,9 +18,10 @@ curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/install.
 
 ## Documentation
 
-- [Tools Reference](docs/TOOLS.md)
-- [Aliases Reference](docs/ALIASES.md)
-- [Customization Guide](docs/EXTENDING.md)
+- [Tools Reference](.config/docs/TOOLS.md)
+- [Aliases Reference](.config/docs/ALIASES.md)
+- [Customization Guide](.config/docs/EXTENDING.md)
+- [YADM Guide](.config/docs/YADM.md)
 
 ## License
 

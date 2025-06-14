@@ -127,7 +127,7 @@ clone_dotfiles() {
   yadm clone "$REPO_URL"
   
   # Run the bootstrap script if available
-  if yadm ls-files | grep -q "^yadm/bootstrap$"; then
+  if yadm ls-files | grep -q "^.config/yadm/bootstrap$"; then
     log_info "Running bootstrap script..."
     log_info "This will install additional tools and configure your environment"
     log_info "The bootstrap process includes:"

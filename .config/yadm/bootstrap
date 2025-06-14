@@ -2,7 +2,7 @@
 
 # yadm bootstrap script
 # This script runs once after yadm clone or yadm bootstrap
-# It sets up a complete development environment using Homebrew
+# It sets up a complete development environment
 
 set -e # Exit immediately if a command exits with a non-zero status
 set -u # Exit if an unset variable is used
@@ -36,49 +36,10 @@ log_error() {
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
-# Check if Homebrew is installed, install if not
-if ! command -v brew &> /dev/null; then
-  log_info "Homebrew not found. Installing..."
-  if [[ "$OS" == "Darwin" ]]; then
-    # macOS
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-    # Add Homebrew to path based on architecture
-    if [[ "$(uname -m)" == "arm64" ]]; then
-      # M1/M2 Mac
-      echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-      # Intel Mac
-      echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
-  else
-    # Linux
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-    # Add Homebrew to PATH
-    test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)"
-    test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    
-    # Add to .zprofile for persistence
-    echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> ~/.zprofile
-  fi
-  log_success "Homebrew installed successfully!"
-else
-  log_info "Homebrew already installed, updating..."
-  brew update
-fi
-
 # Install packages from Brewfile
 log_info "Installing packages from Brewfile..."
-if [ -f "$HOME/homebrew/Brewfile" ]; then
-  brew bundle install --file="$HOME/homebrew/Brewfile"
-  log_success "Packages installed successfully!"
-else
-  log_error "Brewfile not found at ~/homebrew/Brewfile"
-  exit 1
-fi
+brew bundle --global
+log_success "Packages installed successfully!"
 
 # Setup Starship prompt
 if command -v starship &> /dev/null; then
@@ -146,6 +107,7 @@ EOL
   
   # Encrypt sensitive files with yadm
   log_info "Setting up yadm encryption for sensitive files..."
+  mkdir -p "$HOME/.config/yadm"
   echo ".ssh/id_ed25519" >> "$HOME/.config/yadm/encrypt"
   echo ".ssh/config" >> "$HOME/.config/yadm/encrypt"
   yadm encrypt

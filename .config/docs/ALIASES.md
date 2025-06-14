@@ -8,7 +8,7 @@ This document provides a comprehensive reference for all aliases included in the
 
 ## ZSH Aliases
 
-These aliases are defined in `zsh/aliases.zsh` and loaded automatically when your shell starts.
+These aliases are defined in `.config/zsh/aliases.zsh` and loaded automatically when your shell starts.
 
 ### Modern CLI Tool Aliases
 

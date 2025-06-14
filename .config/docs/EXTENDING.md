@@ -16,7 +16,7 @@ This guide explains how to extend and customize your dotfiles setup for differen
 The ZSH configuration is split into modular files for better organization:
 
 ```
-zsh/
+.config/zsh/
 ├── aliases.zsh     # Command aliases and shortcuts
 ├── completion.zsh  # Completion system configuration
 ├── core.zsh        # Core ZSH settings and options
@@ -42,10 +42,10 @@ To modify an existing component, edit the appropriate file:
 
 ```bash
 # Modify aliases
-yadm edit ~/zsh/aliases.zsh
+yadm edit ~/.config/zsh/aliases.zsh
 
 # Change prompt configuration
-yadm edit ~/zsh/prompt.zsh
+yadm edit ~/.config/zsh/prompt.zsh
 ```
 
 No need to edit `.zshrc` directly - it simply loads these modular files.
@@ -60,10 +60,10 @@ If your addition fits into an existing category, add it to the appropriate file:
 
 ```bash
 # Add new aliases
-echo 'alias myalias="command-to-run"' >> ~/zsh/aliases.zsh
+echo 'alias myalias="command-to-run"' >> ~/.config/zsh/aliases.zsh
 
 # Add new tool integration
-yadm edit ~/zsh/tools.zsh
+yadm edit ~/.config/zsh/tools.zsh
 ```
 
 For a complete reference of existing aliases, see [ALIASES.md](ALIASES.md).
@@ -74,7 +74,7 @@ For new functionality that doesn't fit existing categories, create a new `.zsh` 
 
 ```bash
 # Create a new configuration file
-yadm edit ~/zsh/mycustom.zsh
+yadm edit ~/.config/zsh/mycustom.zsh
 ```
 
 Content structure:
@@ -95,7 +95,7 @@ custom-function() {
 export MY_VARIABLE="my-value"
 ```
 
-The main `.zshrc` automatically loads all `.zsh` files from the `zsh/` directory.
+The main `.zshrc` automatically loads all `.zsh` files from the `.config/zsh/` directory.
 
 ### 3. Using .zshrc.local for Machine-Specific Settings
 
@@ -151,7 +151,7 @@ Consider organizing scripts by category:
 Then add these subdirectories to your PATH in a `.zsh` file:
 
 ```bash
-# ~/zsh/script-paths.zsh
+# ~/.config/zsh/script-paths.zsh
 export PATH="$HOME/.local/bin/dev:$PATH"
 export PATH="$HOME/.local/bin/system:$PATH"
 export PATH="$HOME/.local/bin/utils:$PATH"
@@ -256,7 +256,7 @@ To add new packages to install on all your machines:
 
 ### 1. Edit the Brewfile
 
-Edit `~/homebrew/Brewfile`:
+Edit `~/.config/homebrew/Brewfile`:
 
 ```ruby
 # Add a new package
@@ -269,13 +269,13 @@ cask "application-name"  # Add a description of the application
 ### 2. Install the New Packages
 
 ```bash
-brew bundle install --file=~/homebrew/Brewfile
+brew bundle --global
 ```
 
 ### 3. Commit Your Changes
 
 ```bash
-yadm add ~/homebrew/Brewfile
+yadm add ~/.config/homebrew/Brewfile
 yadm commit -m "Add new package to Brewfile"
 yadm push
 ```

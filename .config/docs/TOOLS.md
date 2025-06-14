@@ -15,7 +15,7 @@ This document provides detailed information about the tools included in these do
 
 [Homebrew](https://brew.sh/) is the package manager used for both macOS and Linux. It allows for consistent package management across different platforms.
 
-- **Brewfile**: Located at `~/homebrew/Brewfile`, it contains all packages to be installed during setup.
+- **Brewfile**: Located at `~/.config/homebrew/Brewfile`, it contains all packages to be installed during setup.
 - **Installation**: Handled automatically by the bootstrap script.
 - **Usage**: 
   ```bash
@@ -30,13 +30,13 @@ This document provides detailed information about the tools included in these do
 
 [Zsh](https://www.zsh.org/) is configured with a modular approach:
 
-- **Core config**: Located in `zsh/core.zsh` (history, options, keybindings)
-- **Completion**: Located in `zsh/completion.zsh` (tab completion system)
-- **Prompt**: Located in `zsh/prompt.zsh` (shell prompt settings)
-- **Plugins**: Located in `zsh/plugins.zsh` (plugin loading)
-- **Aliases**: Located in `zsh/aliases.zsh` (command shortcuts)
-- **Tools**: Located in `zsh/tools.zsh` (external tool integration)
-- **Paths**: Located in `zsh/paths.zsh` (PATH and env variables)
+- **Core config**: Located in `.config/zsh/core.zsh` (history, options, keybindings)
+- **Completion**: Located in `.config/zsh/completion.zsh` (tab completion system)
+- **Prompt**: Located in `.config/zsh/prompt.zsh` (shell prompt settings)
+- **Plugins**: Located in `.config/zsh/plugins.zsh` (plugin loading)
+- **Aliases**: Located in `.config/zsh/aliases.zsh` (command shortcuts)
+- **Tools**: Located in `.config/zsh/tools.zsh` (external tool integration)
+- **Paths**: Located in `.config/zsh/paths.zsh` (PATH and env variables)
 
 ### Starship Prompt
 

@@ -1,5 +1,4 @@
 # Homebrew Bundle - Automated package installation
-tap "homebrew/bundle"
 
 # Core development tools
 brew "gcc"                        # GNU compiler collection
