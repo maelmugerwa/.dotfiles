@@ -52,51 +52,64 @@ log_info "Detected OS: $OS"
 # GitHub repository URL
 REPO_URL="https://github.com/maelmugerwa/.dotfiles.git"
 
-# Install yadm if not already installed
-install_yadm() {
-  if ! command -v yadm &> /dev/null; then
-    log_info "Installing yadm..."
+# Install Homebrew for macOS or Linux
+install_homebrew() {
+  if ! command -v brew &> /dev/null; then
+    log_info "Installing Homebrew..."
     
+    # Use the official Homebrew installation script
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    
+    # Add Homebrew to path based on OS and architecture
     if [[ "$OS" == "Darwin" ]]; then
-      # macOS
-      if ! command -v brew &> /dev/null; then
-        log_info "Homebrew not found. Installing..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        
-        # Add Homebrew to path based on architecture
-        if [[ "$(uname -m)" == "arm64" ]]; then
-          # M1/M2 Mac
-          eval "$(/opt/homebrew/bin/brew shellenv)"
-        else
-          # Intel Mac
-          eval "$(/usr/local/bin/brew shellenv)"
-        fi
+      # macOS - handle different architectures
+      if [[ "$(uname -m)" == "arm64" ]]; then
+        # M1/M2 Mac
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      else
+        # Intel Mac
+        eval "$(/usr/local/bin/brew shellenv)"
       fi
-      
-      brew install yadm
     else
       # Linux
-      if command -v apt &> /dev/null; then
-        # Debian/Ubuntu
-        sudo apt update
-        sudo apt install -y yadm
-      elif command -v dnf &> /dev/null; then
-        # Fedora/RHEL
-        sudo dnf install -y yadm
-      elif command -v pacman &> /dev/null; then
-        # Arch
-        sudo pacman -S --noconfirm yadm
-      elif command -v zypper &> /dev/null; then
-        # openSUSE
-        sudo zypper install -y yadm
-      else
-        # Fallback to manual installation
-        log_info "Package manager not found. Installing yadm manually..."
-        curl -fsSL https://github.com/TheLocehiliosan/yadm/raw/master/yadm -o /tmp/yadm
-        chmod a+x /tmp/yadm
-        sudo mv /tmp/yadm /usr/local/bin/
+      if [[ -d "/home/linuxbrew/.linuxbrew" ]]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+      elif [[ -d "$HOME/.linuxbrew" ]]; then
+        eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
       fi
     fi
+    
+    log_success "Homebrew installed successfully!"
+  else
+    log_info "Homebrew is already installed."
+  fi
+}
+
+# Install yadm using Homebrew
+install_yadm() {
+  if ! command -v yadm &> /dev/null; then
+    log_info "Installing yadm using Homebrew..."
+    
+    # Ensure Homebrew is available in this shell session
+    if [[ "$OS" == "Darwin" ]]; then
+      if [[ "$(uname -m)" == "arm64" ]]; then
+        # M1/M2 Mac
+        eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || true
+      else
+        # Intel Mac
+        eval "$(/usr/local/bin/brew shellenv)" 2>/dev/null || true
+      fi
+    else
+      # Linux
+      if [[ -d "/home/linuxbrew/.linuxbrew" ]]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" 2>/dev/null || true
+      elif [[ -d "$HOME/.linuxbrew" ]]; then
+        eval "$("$HOME/.linuxbrew/bin/brew" shellenv)" 2>/dev/null || true
+      fi
+    fi
+    
+    # Install yadm with Homebrew
+    brew install yadm
     
     log_success "yadm installed successfully!"
   else
@@ -156,7 +169,10 @@ main() {
   echo "========================================"
   echo ""
   
-  # Install yadm
+  # Install Homebrew
+  install_homebrew
+  
+  # Install yadm using Homebrew
   install_yadm
   
   # Clone dotfiles
