@@ -1,36 +1,25 @@
 # prompt.zsh - ZSH prompt configuration
-# This file handles the setup of shell prompts (starship or spaceship)
+# This file handles the setup of shell prompt using Starship
 
-# Prompt setup priority:
-# 1. Starship (modern, fast, customizable)
-# 2. Spaceship (alternative if starship not available)
-# 3. Basic built-in prompt (fallback)
+# Starship is a modern, fast, customizable cross-shell prompt
+# Configuration is stored in ~/.config/starship.toml
 
-# Try to load Starship prompt
+# Disable Oh-My-ZSH theme if it's set (to prevent conflicts)
+ZSH_THEME=""
+
+# Initialize Starship prompt if available
 if command -v starship &> /dev/null; then
   eval "$(starship init zsh)"
-  # Starship will use ~/.config/starship.toml automatically
-  
-# If no Starship, try Spaceship
-elif command -v spaceship &> /dev/null; then
-  # Spaceship prompt configuration
-  SPACESHIP_PROMPT_ADD_NEWLINE=true
-  SPACESHIP_CHAR_SYMBOL="⚡"
-  SPACESHIP_BATTERY_SHOW=true
-  SPACESHIP_BATTERY_THRESHOLD=20
-  
-  # Initialize spaceship
-  source "$(brew --prefix)/opt/spaceship/spaceship.zsh"
-  
-# Fall back to a simple built-in prompt
+# Fall back to a simple built-in prompt if Starship is not installed
 else
   # Load promptinit module
   autoload -Uz promptinit
   promptinit
   
-  # Use built-in prompt
-  prompt adam1
+  # Use a simple built-in prompt
+  PROMPT='%F{green}%n@%m%f:%F{blue}%~%f$ '
   
-  # Optionally add a custom basic prompt here if needed
-  # PROMPT='%F{green}%n@%m%f:%F{blue}%~%f$ '
+  # Display warning about missing Starship
+  echo "Warning: Starship prompt not found. Using basic prompt instead." 
+  echo "Install Starship for the full prompt experience: https://starship.rs/"
 fi
