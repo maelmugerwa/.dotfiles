@@ -1,5 +1,6 @@
 # .zshrc - Main ZSH configuration file
 # This file loads modular ZSH configuration from ~/.config/zsh
+source "$HOME/.zshenv"
 
 # Define base directory for ZSH configuration
 ZDOTDIR=${ZDOTDIR:-$HOME}
@@ -34,6 +35,8 @@ for config_file in "${zsh_config_files[@]}"; do
       zsh_debug "Loading config file: $config_file"
     fi
     source "$config_path"
+    source "$HOME/.zshenv"
+    zsh_debug "PATH: $PATH"
   else
     if type zsh_debug &>/dev/null; then
       zsh_debug "Config file not found: $config_file"
@@ -41,18 +44,23 @@ for config_file in "${zsh_config_files[@]}"; do
   fi
 done
 
-# Load any custom ZSH files from ~/.config/zsh that don't match the core files
-# This allows for additional customization without modifying core files
-for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
-  # Skip files we already loaded
-  if [[ -f "$custom_file" ]]; then
-    basename=${custom_file:t}
-    if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
-      source "$custom_file"
-    fi
-  fi
-done
+zsh_debug "PATH before loading custom: $PATH"
 
+# # Load any custom ZSH files from ~/.config/zsh that don't match the core files
+# # This allows for additional customization without modifying core files
+# for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
+#   # Skip files we already loaded
+#   if [[ -f "$custom_file" ]]; then
+#     basename=${custom_file:t}
+#     if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
+#       zsh_debug "Loading custom config file: $custom_file"
+#       source "$custom_file"
+#       source "$HOME/.zshenv"
+#     fi
+#   fi
+# done
+
+zsh_debug "PATH before cleanup: $PATH"
 
 # Clean up
 unset zsh_config_files
@@ -60,6 +68,11 @@ unset config_file
 unset config_path
 unset basename
 unset custom_file
+
+# Reset path 
+source "$HOME/.zshenv"
+zsh_debug "Resetting PATH to .zshenv"
+zsh_debug "End PATH: $PATH"
 
 # ===================================================================
 # AUTO-ADDED CONTENT SECTION

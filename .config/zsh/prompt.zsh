@@ -47,30 +47,15 @@ if [[ -z "$STARSHIP_PATH" ]]; then
   fi
 fi
 
-# Save the original PATH before initializing Starship
 if [[ -n "$STARSHIP_PATH" ]]; then
   if type zsh_debug &>/dev/null; then
     zsh_debug "Initializing Starship prompt"
     zsh_debug "Starship config location: $XDG_CONFIG_HOME/starship.toml"
   fi
   
-  # Important: Save the current PATH before calling starship
-  ORIGINAL_PATH="$PATH"
-  
   # Capture any errors during initialization
   init_output=$("$STARSHIP_PATH" init zsh 2>&1)
   init_status=$?
-  
-  # Check if PATH was modified/corrupted by starship init
-  if [[ "$PATH" != "$ORIGINAL_PATH" ]]; then
-    if type zsh_debug &>/dev/null; then
-      zsh_debug "WARNING: PATH was modified during starship initialization"
-      zsh_debug "Original PATH: $ORIGINAL_PATH"
-      zsh_debug "New PATH: $PATH"
-    fi
-    # Restore the original PATH
-    export PATH="$ORIGINAL_PATH"
-  fi
   
   if [[ $init_status -eq 0 ]]; then
     if type zsh_debug &>/dev/null; then
@@ -89,10 +74,8 @@ if [[ -n "$STARSHIP_PATH" ]]; then
   fi
 # Fall back to a simple built-in prompt if Starship is not installed
 else
-  if type zsh_debug &>/dev/null; then
-    zsh_debug "WARNING: Starship not found in PATH or common locations"
-    zsh_debug "Current PATH: $PATH"
-  fi
+  zsh_debug "WARNING: Starship not found in PATH or common locations"
+  zsh_debug "Current PATH: $PATH"
 
   # Load promptinit module
   autoload -Uz promptinit

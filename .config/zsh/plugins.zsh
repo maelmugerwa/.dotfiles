@@ -23,7 +23,6 @@ plugin_paths=(
 load_plugin() {
   local plugin_name="$1"
   local plugin_found=0
-  local original_path="$PATH"  # Save original PATH
   
   # Use debug function if available
   if type zsh_debug &>/dev/null; then
@@ -39,20 +38,6 @@ load_plugin() {
       
       source "$plugin_path"
       plugin_found=1
-      
-      # Check if PATH was completely overwritten (instead of appended to)
-      # This handles both corruption and legitimate additions
-      if [[ "$PATH" != *"$original_path"* && "$PATH" != "$original_path"* ]]; then
-        # Instead of just restoring, we'll merge the paths
-        # New paths the plugin might have added + our original paths
-        export PATH="$PATH:$original_path"
-        # Remove duplicates while preserving order
-        typeset -U PATH
-        
-        if type zsh_debug &>/dev/null; then
-          zsh_debug "Fixed PATH after loading $plugin_name plugin"
-        fi
-      fi
       
       if type zsh_debug &>/dev/null; then
         zsh_debug "Successfully loaded plugin: $plugin_name"
@@ -119,19 +104,9 @@ if [[ -d "$local_plugins_dir" ]]; then
     if [[ -f "$plugin_file" ]]; then
       # Extract plugin name from filename for logging
       local plugin_name=$(basename "$plugin_file" .zsh)
-      local original_path="$PATH"
       
       zsh_debug "Before loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
       source "$plugin_file"
-      
-      # Apply the same PATH protection as in load_plugin
-      if [[ "$PATH" != *"$original_path"* && "$PATH" != "$original_path"* ]]; then
-        # Merge paths and remove duplicates
-        export PATH="$PATH:$original_path"
-        typeset -U PATH
-        zsh_debug "Fixed PATH after loading local plugin $plugin_name" >> ~/path_debug.log
-      fi
-       zsh_debug "After loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
     fi
   done
 fi

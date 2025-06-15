@@ -12,8 +12,7 @@ fi
 
 # Debug logging function
 zsh_debug() {
-  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  echo "[$timestamp] $1" >> "$ZSH_DEBUG_FILE"
+  echo "$1" >> "$ZSH_DEBUG_FILE"
 }
 
 # Log header for new session
@@ -62,5 +61,5 @@ log_keybindings() {
   while read -r line; do
     zsh_debug "  $line"
   done < "$tmp_file"
-  rm "$tmp_file"
+  # rm "$tmp_file"
 }

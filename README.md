@@ -51,11 +51,13 @@ The installation script provides an interactive menu with options to:
 - [YADM Guide](.config/docs/YADM.md)
 
 ## TODO
+- Cleanup local.zsh & .zshenv to better handle WSL. Should hopefully retrieve bash or windows path and through var instead
 - Cleanup debug.zsh to not use shell commands which might not be available
 - Find a cleaner solution to avoid having to source .zshenv after each zsh config load
 - Re-enable debug.zsh in plugins.zsh
 - Delete repo_setup script as it's not needed on new machines
 - Move debug.zsh to its own folder to avoid it being loaded through custom loaders in .zshrc
+- Fix local.zsh currently tracked in git
 
 ## License
 

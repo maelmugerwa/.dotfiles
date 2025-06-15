@@ -12,29 +12,6 @@ if [[ ! -d "$HOME/.local/bin" ]]; then
   mkdir -p "$HOME/.local/bin"
 fi
 
-# Extract Windows username from mounted drives (if in WSL)
-# Default to current Linux username if unable to determine
-WINDOWS_USERNAME=""
-if [[ -d "/mnt/c/Users" ]]; then
-  # Try to find the Windows username by checking for common directories
-  for dir in /mnt/c/Users/*; do
-    if [[ -d "$dir/AppData" ]]; then
-      WINDOWS_USERNAME=$(basename "$dir")
-      break
-    fi
-  done
-  
-  # If still empty, attempt to extract from $PATH
-  if [[ -z "$WINDOWS_USERNAME" && "$PATH" == *"/mnt/c/Users/"* ]]; then
-    WINDOWS_USERNAME=$(echo "$PATH" | sed -n 's/.*\/mnt\/c\/Users\/\([^\/]*\)\/.*/\1/p' | head -1)
-  fi
-  
-  # Fallback to Linux username if still not found
-  if [[ -z "$WINDOWS_USERNAME" ]]; then
-    WINDOWS_USERNAME=$(whoami)
-  fi
-fi
-
 # Ensure minimum PATH for core utilities
 # This prevents "command not found" errors during initialization
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
@@ -75,18 +52,6 @@ path=(
   "/mnt/c/WINDOWS/System32/Wbem"
   "/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0"
   "/mnt/c/WINDOWS/System32/OpenSSH"
-  
-  # Windows user-specific paths (using dynamic username)
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/oh-my-posh/bin"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/Python/Python312/Scripts"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/Python/Python312"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/Python/Launcher"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Microsoft/WindowsApps"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Microsoft/WinGet/Links"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/GitHubDesktop/bin"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Roaming/npm"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/Microsoft VS Code/bin"
-  "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Yarn/bin"
   
   # Other paths
   "/mnt/c/ProgramData/chocolatey/bin"      # Chocolatey package manager
