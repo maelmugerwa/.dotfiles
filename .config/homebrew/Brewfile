@@ -12,10 +12,11 @@ brew "zsh-completions"            # Additional completions for zsh (auto-loaded 
 brew "zsh-autosuggestions"        # Fish-like autosuggestions for zsh (loaded in .zshrc)
 brew "zsh-syntax-highlighting"    # Syntax highlighting for zsh (loaded in .zshrc)
 brew "starship"                   # Cross-shell prompt (run: starship init)
-brew "fzf"                        # Fuzzy finder for command-line (Ctrl+R for history)
+brew "fzf"                        # Fuzzy finder for command-line (file searching)
 brew "thefuck"                    # Command correction tool (run: thefuck COMMAND)
 brew "direnv"                     # Environment switcher (enable with: direnv allow)
-brew "atuin"                      # Magical shell history (commands: atuin import, atuin search)
+# brew "atuin"                    # Replaced by mcfly for shell history
+brew "mcfly"                      # Smart shell history search with context awareness
 brew "zoxide"                     # Smarter cd command (use: z directory)
 
 # Modern CLI replacements
@@ -41,5 +42,4 @@ brew "pyenv"                      # Python version manager (commands: pyenv inst
 
 # Utilities
 brew "just"                       # Modern command runner (command: just)
-brew "mcfly"                      # Smart search for shell history (enhances Ctrl+R)
 brew "xclip"                      # X11 clipboard tool (commands: xclip, xclip -o)

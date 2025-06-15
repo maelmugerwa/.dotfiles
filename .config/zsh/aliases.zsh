@@ -58,6 +58,29 @@ alias g="git"                            # Short git command
 alias gs="git status"                    # Check git status
 alias gl="git log"                       # View git log
 
+# Terminal UI tools
+alias lg="lazygit"                       # Terminal UI for git
+alias ld="lazydocker"                    # Terminal UI for docker
+alias top="btop"                         # Better top command
+
+# JSON handling
+alias jqp="jq '.'"                       # Pretty-print JSON
+alias jqs="jq -r 'keys'"                 # Show JSON keys
+alias jqv="jq -r '.[] | .'"              # Show JSON values
+
+# HTTP client
+alias GET="http GET"                     # HTTP GET request
+alias POST="http POST"                   # HTTP POST request
+alias HEAD="http HEAD"                   # HTTP HEAD request
+alias httpj="http --json"                # HTTP with JSON content-type
+
+# Diff tool
+alias diff="difft"                       # Use difftastic for better diffs
+
+# Just - task runner
+alias j="just"                           # Run just command
+alias jl="just --list"                   # List available just recipes
+
 # Add your custom aliases below this line
 # Example:
 # alias mycommand="complex command with options"

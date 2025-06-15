@@ -15,6 +15,7 @@ zsh_config_files=(
   "prompt.zsh"    # Prompt configuration
   "tools.zsh"     # External tool integrations
   "aliases.zsh"   # Command aliases and shortcuts
+  "local.zsh"     # Machine-specific configurations
 )
 
 # Source each config file if it exists
@@ -30,17 +31,13 @@ done
 for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
   # Skip files we already loaded
   if [[ -f "$custom_file" ]]; then
-    basename=$(basename "$custom_file")
+    basename=${custom_file:t}
     if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
       source "$custom_file"
     fi
   fi
 done
 
-# Load local configurations if available (machine-specific)
-if [[ -f "$HOME/.zshrc.local" ]]; then
-  source "$HOME/.zshrc.local"
-fi
 
 # Clean up
 unset zsh_config_files

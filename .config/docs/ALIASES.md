@@ -76,6 +76,47 @@ These aliases are defined in `.config/zsh/aliases.zsh` and loaded automatically 
 | `gs` | `git status` | Check git status |
 | `gl` | `git log` | View git commit history |
 
+### Terminal UI Tools
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `lg` | `lazygit` | Terminal UI for git operations |
+| `ld` | `lazydocker` | Terminal UI for docker management |
+| `top` | `btop` | Better interactive process viewer |
+
+### JSON Handling
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `jqp` | `jq '.'` | Pretty-print JSON |
+| `jqs` | `jq -r 'keys'` | Show JSON keys |
+| `jqv` | `jq -r '.[] \| .'` | Show JSON values |
+
+### HTTP Client
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `GET` | `http GET` | HTTP GET request |
+| `POST` | `http POST` | HTTP POST request |
+| `HEAD` | `http HEAD` | HTTP HEAD request |
+| `httpj` | `http --json` | HTTP with JSON content-type |
+
+### Diff Tool
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `diff` | `difft` | Use difftastic for better diffs |
+
+### Task Runner
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `j` | `just` | Run just command |
+| `jl` | `just --list` | List available just recipes |
+
+### FZF Utilities
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `fcd` | `cd $(find . -type d \| fzf)` | Interactive cd to directory |
+| `fopen` | `xdg-open $(find . -type f \| fzf)` | Open file with default app |
+| `ff` | `find . -type f \| fzf` | Find files interactively |
+| `fd` | `find . -type d \| fzf` | Find directories interactively |
+
 ## Git Aliases
 
 These aliases are defined in `.gitconfig` and are used with the `git` command.
