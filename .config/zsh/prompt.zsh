@@ -55,7 +55,7 @@ if [[ -n "$STARSHIP_PATH" ]]; then
   fi
   
   # Important: Save the current PATH before calling starship
-  local ORIGINAL_PATH="$PATH"
+  ORIGINAL_PATH="$PATH"
   
   # Capture any errors during initialization
   init_output=$("$STARSHIP_PATH" init zsh 2>&1)
