@@ -126,8 +126,13 @@ handle_ssh_key() {
   log_info "Testing SSH connection to GitHub with $key_name key..."
   echo "Command output (you may see locale warnings that can be safely ignored):"
   echo "-----------------------------------------------------------------"
+  
+  # Temporarily disable exit on error for the SSH test
+  set +e
   # Run SSH test and capture the complete output
   ssh -T -o StrictHostKeyChecking=accept-new git@$host_alias 2>&1
+  set -e  # Re-enable exit on error
+  
   echo "-----------------------------------------------------------------"
   log_info "GitHub typically responds with a message containing 'successfully authenticated'"
   log_info "Even if you see locale warnings, the connection is successful if that message appears"
