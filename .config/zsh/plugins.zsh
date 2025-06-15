@@ -1,6 +1,9 @@
 # plugins.zsh - ZSH plugin loading mechanism
 # This file handles loading of ZSH plugins from various sources
 
+# Add diagnostic logging
+echo "plugins.zsh start - PATH: $PATH" >> ~/path_debug.log
+
 # Define possible plugin locations
 plugin_paths=(
   "/usr/local/share"
@@ -13,11 +16,14 @@ load_plugin() {
   local plugin_name="$1"
   local plugin_found=0
   
+  echo "Before loading plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
+  
   for path in "${plugin_paths[@]}"; do
     local plugin_path="$path/$plugin_name/$plugin_name.zsh"
     if [[ -f "$plugin_path" ]]; then
       source "$plugin_path"
       plugin_found=1
+      echo "After loading plugin $plugin_name from $plugin_path - PATH: $PATH" >> ~/path_debug.log
       break
     fi
   done
