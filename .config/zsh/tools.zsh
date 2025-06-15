@@ -60,13 +60,26 @@ fi
 # Initialize pyenv (Python version manager)
 if command -v pyenv &> /dev/null; then
   eval "$(pyenv init -)"
+  
+  # Add virtualenv support if pyenv-virtualenv is installed
+  if command -v pyenv-virtualenv-init &> /dev/null || [[ -d "$(pyenv root)/plugins/pyenv-virtualenv" ]]; then
+    eval "$(pyenv virtualenv-init -)"
+  fi
 fi
 
 # Initialize asdf (version manager)
 if [[ -f /usr/local/opt/asdf/libexec/asdf.sh ]]; then
   source /usr/local/opt/asdf/libexec/asdf.sh
+  # Add completions if available
+  if [[ -f /usr/local/opt/asdf/etc/bash_completion.d/asdf.bash ]]; then
+    source /usr/local/opt/asdf/etc/bash_completion.d/asdf.bash
+  fi
 elif [[ -f $HOME/.asdf/asdf.sh ]]; then
   source $HOME/.asdf/asdf.sh
+  # Add completions if available
+  if [[ -f $HOME/.asdf/completions/asdf.bash ]]; then
+    source $HOME/.asdf/completions/asdf.bash
+  fi
 fi
 
 # Add other tool initializations below this line
