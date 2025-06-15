@@ -20,3 +20,9 @@ unsetopt beep           # No beep on error
 
 # Keybindings
 bindkey -e              # Use emacs key bindings (more standard)
+
+# Additional history options for better search experience
+setopt hist_expire_dups_first # Delete duplicates first when HISTFILE size exceeds HISTSIZE
+setopt hist_find_no_dups      # Do not display a line previously found
+setopt hist_reduce_blanks     # Remove superfluous blanks before recording entry
+setopt hist_verify            # Show command with history expansion before running it

@@ -11,6 +11,7 @@ brew "zsh"                        # Z Shell - powerful interactive shell (comman
 brew "zsh-completions"            # Additional completions for zsh (auto-loaded by zsh)
 brew "zsh-autosuggestions"        # Fish-like autosuggestions for zsh (loaded in .zshrc)
 brew "zsh-syntax-highlighting"    # Syntax highlighting for zsh (loaded in .zshrc)
+brew "zsh-history-substring-search" # Fish-like history search with up/down arrows
 brew "starship"                   # Cross-shell prompt (run: starship init)
 brew "fzf"                        # Fuzzy finder for command-line (file searching)
 brew "thefuck"                    # Command correction tool (run: thefuck COMMAND)
