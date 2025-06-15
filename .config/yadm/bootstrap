@@ -36,25 +36,9 @@ log_error() {
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
-# Setup Homebrew paths
-log_info "Setting up Homebrew in shell configuration..."
-if [[ "$OS" == "Darwin" ]]; then
-  if [[ "$(uname -m)" == "arm64" ]]; then
-    # M1/M2 Mac
-    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc.local
-  else
-    # Intel Mac
-    echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zshrc.local
-  fi
-else
-  # Linux
-  if [[ -d "/home/linuxbrew/.linuxbrew" ]]; then
-    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.zshrc.local
-  elif [[ -d "$HOME/.linuxbrew" ]]; then
-    echo 'eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"' >> ~/.zshrc.local
-  fi
-fi
-log_success "Homebrew path configured!"
+# Homebrew path is now configured in ~/.zshenv which is loaded before any other config
+log_info "Skipping Homebrew path setup in zshrc.local (handled by .zshenv)"
+log_success "Homebrew path configured in .zshenv!"
 
 # Install packages from Brewfile
 log_info "Installing packages from Brewfile..."

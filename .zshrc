@@ -8,7 +8,7 @@ ZSH_CONFIG_DIR="$HOME/.config/zsh"
 # Load core ZSH configuration files
 # Order matters here - load in dependency order
 zsh_config_files=(
-  "paths.zsh"     # Path and environment variables first
+  # path-related settings now moved to ~/.zshenv
   "core.zsh"      # Core ZSH settings and options
   "completion.zsh" # Completion system
   "plugins.zsh"   # Plugin loading mechanism
@@ -56,7 +56,7 @@ unset custom_file
 # When you notice new content here, consider moving it to the 
 # appropriate module file in ~/.config/zsh/ for better organization:
 #
-# - For PATH additions:          → paths.zsh
+# - For PATH additions:          → ~/.zshenv
 # - For aliases/functions:       → aliases.zsh
 # - For tool configurations:     → tools.zsh
 # - For completion settings:     → completion.zsh
