@@ -8,7 +8,7 @@ add_newline = true
 
 # Main prompt format
 format = """
-$directory\
+$directory$git_branch\
 $git_status\
 $docker_context\
 $nodejs\
@@ -28,21 +28,22 @@ truncation_length = 3
 truncation_symbol = "…/"
 truncate_to_repo = true
 style = "bold blue"
-format = "[$path]($style)[$repo]($style):[$branch](bold green)"
-repo_root_format = "[$path]($style)[$repo]($style):[$branch](bold green)"
+format = "[$path]($style)"
+repo_root_format = "[$path]($style)[$repo]($style)"
 
 # Disable standard git branch module since we're handling it in directory
 [git_branch]
-disabled = true
+disabled = false
+format = "[:](bold blue)[$branch](bold green)"
 
 # Git status with custom format
 [git_status]
-format = " [ ${conflicted}${ahead_behind}${all_count}${stashed} ]($style)"
+format = " [ ${conflicted}${ahead_behind}${modified}${stashed} ]($style)"
 conflicted = "${([≠](bold red))}${( | )}"
 ahead = "${([↑${count}](cyan))}${( | )}"
 behind = "${([↓${count}](magenta))}${( | )}"
 diverged = "${([↕${ahead_count}↓${behind_count}](purple))}${( | )}"
-all_count = "${([!${count}](yellow))}"
+modified = "${([!${count}](yellow))}"
 stashed = "${( | )}${([S${count}](dim blue))}"
 style = "bold white"
 
@@ -108,5 +109,5 @@ display = [{ threshold = 20 }]
 
 # Command character
 [character]
-success_symbol = "[⚡](bold green)"
-error_symbol = "[⚡](bold red)"
+success_symbol = "[>](green)"
+error_symbol = "[>](red)"
