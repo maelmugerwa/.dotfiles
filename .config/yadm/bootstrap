@@ -412,6 +412,41 @@ EOL
   log_success "Basic Neovim configuration created!"
 fi
 
+# Complete bootstrap with instructions for switching to zsh
 log_success "Bootstrap completed successfully!"
-log_info "Remember to restart your shell or run 'source ~/.zshrc' to apply changes."
-log_info "To setup a git remote for your dotfiles, run: yadm remote add origin <your-repo-url>"
+
+# Get path to Homebrew zsh
+BREW_ZSH="$(which zsh)"
+
+# Create the full command to properly set up zsh
+SETUP_ZSH_CMD="echo \"$BREW_ZSH\" | sudo tee -a /etc/shells && chsh -s \"$BREW_ZSH\" && echo 'Shell changed! Start a new terminal or run: exec zsh -l'"
+
+# Display instructions
+echo ""
+echo "======================================================================"
+echo "To complete your setup, zsh needs to be added to approved shells"
+echo "and set as your default shell."
+echo ""
+echo "Run this command (copied to your clipboard):"
+echo ""
+echo "  $SETUP_ZSH_CMD"
+echo ""
+echo "======================================================================"
+
+# Copy to clipboard based on available tools
+if command -v pbcopy &> /dev/null; then
+    echo "$SETUP_ZSH_CMD" | pbcopy
+    echo "✓ Command copied to clipboard!"
+elif command -v xclip &> /dev/null; then
+    echo "$SETUP_ZSH_CMD" | xclip -selection clipboard
+    echo "✓ Command copied to clipboard!"
+else
+    echo "⚠ No clipboard tool found - please copy the command manually."
+fi
+
+# For the current session, switch to zsh if available
+if command -v zsh &> /dev/null; then
+    echo ""
+    echo "Switching current session to zsh..."
+    exec zsh
+fi

@@ -22,7 +22,7 @@ $HOME/
     ├── homebrew/         # Homebrew bundle files
     │   └── Brewfile      # Used by 'brew bundle --global'
     ├── yadm/             # YADM configuration
-    │   ├── bootstrap     # Bootstrap script executed by 'yadm bootstrap'
+    │   ├── bootstrap     # Main bootstrap script executed by 'yadm bootstrap'
     │   └── setup-repo.sh # Helper to set up GitHub repository
     └── zsh/              # ZSH modular configuration
         ├── aliases.zsh   # Command aliases and shortcuts
