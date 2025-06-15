@@ -140,6 +140,11 @@ log_info "SSH setup complete! You can now use different GitHub accounts:"
 log_info "- Primary: git clone git@github.com:username/repo.git"
 log_info "- Secondary: git clone git@github-2:username/repo.git"
 
+# Update yadm remote from HTTPS to SSH for better security and authentication
+log_info "Updating yadm remote URL from HTTPS to SSH format..."
+yadm remote set-url origin "git@github.com:maelmugerwa/.dotfiles.git"
+log_success "Remote URL updated to use SSH!"
+
 
 # Complete bootstrap with instructions for switching to zsh
 log_success "Bootstrap completed successfully!"
