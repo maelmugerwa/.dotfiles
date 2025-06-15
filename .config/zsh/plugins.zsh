@@ -1,8 +1,11 @@
 # plugins.zsh - ZSH plugin loading mechanism
 # This file handles loading of ZSH plugins from various sources
 
-# Add diagnostic logging - Uncomment to debug PATH issues
-# echo "plugins.zsh start - PATH: $PATH" >> ~/path_debug.log
+# Source debug utility if it exists
+if [[ -f "$HOME/.config/zsh/debug.zsh" ]]; then
+  source "$HOME/.config/zsh/debug.zsh"
+  zsh_debug "Loading plugins.zsh"
+fi
 
 # Define possible plugin locations
 plugin_paths=(
@@ -17,11 +20,18 @@ load_plugin() {
   local plugin_found=0
   local original_path="$PATH"  # Save original PATH
   
-  # echo "Before loading plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
+  # Use debug function if available
+  if type zsh_debug &>/dev/null; then
+    zsh_debug "Attempting to load plugin: $plugin_name"
+  fi
   
   for path in "${plugin_paths[@]}"; do
     local plugin_path="$path/$plugin_name/$plugin_name.zsh"
     if [[ -f "$plugin_path" ]]; then
+      if type zsh_debug &>/dev/null; then
+        zsh_debug "Loading plugin $plugin_name from $plugin_path"
+      fi
+      
       source "$plugin_path"
       plugin_found=1
       
@@ -33,16 +43,27 @@ load_plugin() {
         export PATH="$PATH:$original_path"
         # Remove duplicates while preserving order
         typeset -U PATH
-        # echo "Fixed PATH after loading $plugin_name plugin" >> ~/path_debug.log
+        
+        if type zsh_debug &>/dev/null; then
+          zsh_debug "Fixed PATH after loading $plugin_name plugin"
+        fi
       fi
       
-      # echo "After loading plugin $plugin_name from $plugin_path - PATH: $PATH" >> ~/path_debug.log
+      if type zsh_debug &>/dev/null; then
+        zsh_debug "Successfully loaded plugin: $plugin_name"
+      fi
       break
     fi
   done
   
-  if [[ $plugin_found -eq 0 && $2 != "silent" ]]; then
-    echo "Warning: $plugin_name not found"
+  if [[ $plugin_found -eq 0 ]]; then
+    if type zsh_debug &>/dev/null; then
+      zsh_debug "WARNING: Plugin $plugin_name not found in configured paths"
+    fi
+    
+    if [[ $2 != "silent" ]]; then
+      echo "Warning: $plugin_name not found"
+    fi
   fi
 }
 
@@ -52,11 +73,35 @@ load_plugin "zsh-syntax-highlighting" # Syntax highlighting in the shell
 load_plugin "zsh-history-substring-search" # Better history searching with up/down arrows
 
 # Set up history substring search bindings
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
+# Handle different terminal key codes
+# Standard keys
+bindkey '^[[A' history-substring-search-up      # Up arrow
+bindkey '^[[B' history-substring-search-down    # Down arrow
+
+# Alternative keys for various terminals
+bindkey '^[OA' history-substring-search-up      # xterm/gnome
+bindkey '^[OB' history-substring-search-down    # xterm/gnome
+
+# Add Ctrl+P and Ctrl+N as alternatives that always work
+bindkey '^P' history-substring-search-up        # Ctrl+P
+bindkey '^N' history-substring-search-down      # Ctrl+N
+
+# Also add to vi keymaps
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+
+# Vim key bindings
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
 
 # Optional: ensure unique results
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
+
+# Log keybindings if debug utility is available
+if type log_keybindings &>/dev/null; then
+  zsh_debug "Setting up history substring search keybindings"
+  log_keybindings
+fi
 
 # Additional plugins can be loaded here
 # Examples:

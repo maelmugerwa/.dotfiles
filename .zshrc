@@ -5,6 +5,13 @@
 ZDOTDIR=${ZDOTDIR:-$HOME}
 ZSH_CONFIG_DIR="$HOME/.config/zsh"
 
+# Load debug utility first if it exists
+if [[ -f "$ZSH_CONFIG_DIR/debug.zsh" ]]; then
+  source "$ZSH_CONFIG_DIR/debug.zsh"
+  zsh_debug "Starting ZSH initialization (.zshrc)"
+  zsh_debug "ZSH_CONFIG_DIR: $ZSH_CONFIG_DIR"
+fi
+
 # Load core ZSH configuration files
 # Order matters here - load in dependency order
 zsh_config_files=(
@@ -22,7 +29,14 @@ zsh_config_files=(
 for config_file in "${zsh_config_files[@]}"; do
   config_path="$ZSH_CONFIG_DIR/$config_file"
   if [[ -f "$config_path" ]]; then
+    if type zsh_debug &>/dev/null; then
+      zsh_debug "Loading config file: $config_file"
+    fi
     source "$config_path"
+  else
+    if type zsh_debug &>/dev/null; then
+      zsh_debug "Config file not found: $config_file"
+    fi
   fi
 done
 
