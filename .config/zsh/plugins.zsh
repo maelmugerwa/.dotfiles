@@ -1,9 +1,14 @@
 # plugins.zsh - ZSH plugin loading mechanism
 # This file handles loading of ZSH plugins from various sources
 
-# Source debug utility if it exists
-if [[ -f "$HOME/.config/zsh/debug.zsh" ]]; then
+# Source debug utility if it exists (but only once)
+if [[ -f "$HOME/.config/zsh/debug.zsh" && -z "$ZSH_DEBUG_LOADED" ]]; then
+  export ZSH_DEBUG_LOADED=1
   source "$HOME/.config/zsh/debug.zsh"
+fi
+
+# Log if debug functions are available
+if type zsh_debug &>/dev/null; then
   zsh_debug "Loading plugins.zsh"
 fi
 
@@ -62,7 +67,7 @@ load_plugin() {
     fi
     
     if [[ $2 != "silent" ]]; then
-      echo "Warning: $plugin_name not found"
+      zsh_debug "Warning: $plugin_name not found"
     fi
   fi
 }
@@ -116,7 +121,7 @@ if [[ -d "$local_plugins_dir" ]]; then
       local plugin_name=$(basename "$plugin_file" .zsh)
       local original_path="$PATH"
       
-      # echo "Before loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
+      zsh_debug "Before loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
       source "$plugin_file"
       
       # Apply the same PATH protection as in load_plugin
@@ -124,9 +129,9 @@ if [[ -d "$local_plugins_dir" ]]; then
         # Merge paths and remove duplicates
         export PATH="$PATH:$original_path"
         typeset -U PATH
-        # echo "Fixed PATH after loading local plugin $plugin_name" >> ~/path_debug.log
+        zsh_debug "Fixed PATH after loading local plugin $plugin_name" >> ~/path_debug.log
       fi
-      # echo "After loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
+       zsh_debug "After loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
     fi
   done
 fi

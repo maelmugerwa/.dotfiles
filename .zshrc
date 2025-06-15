@@ -5,8 +5,9 @@
 ZDOTDIR=${ZDOTDIR:-$HOME}
 ZSH_CONFIG_DIR="$HOME/.config/zsh"
 
-# Load debug utility first if it exists
-if [[ -f "$ZSH_CONFIG_DIR/debug.zsh" ]]; then
+# Load debug utility first if it exists (but only once)
+if [[ -f "$ZSH_CONFIG_DIR/debug.zsh" && -z "$ZSH_DEBUG_LOADED" ]]; then
+  export ZSH_DEBUG_LOADED=1
   source "$ZSH_CONFIG_DIR/debug.zsh"
   zsh_debug "Starting ZSH initialization (.zshrc)"
   zsh_debug "ZSH_CONFIG_DIR: $ZSH_CONFIG_DIR"

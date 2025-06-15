@@ -64,9 +64,3 @@ log_keybindings() {
   done < "$tmp_file"
   rm "$tmp_file"
 }
-
-# Export functions for use in other files
-export -f zsh_debug
-export -f command_exists
-export -f zsh_plugin_debug
-export -f log_keybindings
