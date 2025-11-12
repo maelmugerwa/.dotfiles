@@ -58,6 +58,15 @@ The installation script provides an interactive menu with options to:
 - Delete repo_setup script as it's not needed on new machines
 - Move debug.zsh to its own folder to avoid it being loaded through custom loaders in .zshrc
 - Fix local.zsh currently tracked in git
+- fix below troubleshooting experienced on new WSL2 install
+
+## Troubleshooting
+On new WSL2 install had to 
+- Add zsh as shell `which zsh | sudo tee -a /etc/shells`
+- Change default shell `chsh -s ${which zsh}`
+- exit WSL and verify zsh
+- Install correct node version `fnm install 20 && fnm use 20 && fnm default 20`
+- Might need to update npm config if npm install fails `npm config set cache ~/.npm-cache --global && npm config set prefix ~/.npm-global --global`
 
 ## License
 
