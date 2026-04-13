@@ -32,6 +32,16 @@ log_error() {
   echo -e "${RED}[ERROR]${NC} $1"
 }
 
+copy_to_clipboard() {
+  if command -v pbcopy &> /dev/null; then
+    pbcopy
+  elif command -v xclip &> /dev/null && [ -n "${DISPLAY:-}" ]; then
+    xclip -selection clipboard
+  else
+    return 1
+  fi
+}
+
 # Detect operating system
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
@@ -79,16 +89,8 @@ handle_ssh_key() {
   cat "${key_path}.pub"
   echo ""
   
-  # Copy key to clipboard based on available tools
-  if command -v xclip &> /dev/null; then
-    xclip -selection clipboard < "${key_path}.pub"
-    log_success "$key_name key copied to clipboard using xclip!"
-  elif command -v pbcopy &> /dev/null; then
-    pbcopy < "${key_path}.pub"
-    log_success "$key_name key copied to clipboard using pbcopy!"
-  else
-    log_warn "No clipboard tool found. Please manually copy the $key_name key shown above."
-    log_info "Tip: Run 'brew bundle --file=\"$HOME/.config/homebrew/Brewfile\"' to install clipboard tools."
+  if copy_to_clipboard < "${key_path}.pub"; then
+    log_success "$key_name key copied to clipboard!"
   fi
   
   log_info "Add this $key_name key to GitHub: https://github.com/settings/ssh/new"
@@ -167,15 +169,8 @@ echo "  $SETUP_ZSH_CMD"
 echo ""
 echo "======================================================================"
 
-# Copy to clipboard based on available tools
-if command -v pbcopy &> /dev/null; then
-    echo "$SETUP_ZSH_CMD" | pbcopy
-    echo "✓ Command copied to clipboard!"
-elif command -v xclip &> /dev/null; then
-    echo "$SETUP_ZSH_CMD" | xclip -selection clipboard
-    echo "✓ Command copied to clipboard!"
-else
-    echo "⚠ No clipboard tool found - please copy the command manually."
+if echo "$SETUP_ZSH_CMD" | copy_to_clipboard; then
+    echo "Command copied to clipboard!"
 fi
 
 # For the current session, switch to zsh if available
