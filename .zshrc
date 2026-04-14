@@ -1,6 +1,5 @@
 # .zshrc - Main ZSH configuration file
 # This file loads modular ZSH configuration from ~/.config/zsh
-source "$HOME/.zshenv"
 
 # Define base directory for ZSH configuration
 ZDOTDIR=${ZDOTDIR:-$HOME}
@@ -17,7 +16,6 @@ fi
 # Load core ZSH configuration files
 # Order matters here - load in dependency order
 zsh_config_files=(
-  # path-related settings now moved to ~/.zshenv
   "core.zsh"      # Core ZSH settings and options
   "completion.zsh" # Completion system
   "plugins.zsh"   # Plugin loading mechanism
@@ -35,8 +33,6 @@ for config_file in "${zsh_config_files[@]}"; do
       zsh_debug "Loading config file: $config_file"
     fi
     source "$config_path"
-    source "$HOME/.zshenv"
-    zsh_debug "PATH: $PATH"
   else
     if type zsh_debug &>/dev/null; then
       zsh_debug "Config file not found: $config_file"
@@ -44,23 +40,19 @@ for config_file in "${zsh_config_files[@]}"; do
   fi
 done
 
-zsh_debug "PATH before loading custom: $PATH"
-
-# # Load any custom ZSH files from ~/.config/zsh that don't match the core files
-# # This allows for additional customization without modifying core files
-# for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
-#   # Skip files we already loaded
-#   if [[ -f "$custom_file" ]]; then
-#     basename=${custom_file:t}
-#     if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
-#       zsh_debug "Loading custom config file: $custom_file"
-#       source "$custom_file"
-#       source "$HOME/.zshenv"
-#     fi
-#   fi
-# done
-
-zsh_debug "PATH before cleanup: $PATH"
+# Load any extra .zsh files from ~/.config/zsh that aren't in the core list
+# This allows additional customization without modifying core files
+for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
+  if [[ -f "$custom_file" ]]; then
+    basename=${custom_file:t}
+    if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
+      if type zsh_debug &>/dev/null; then
+        zsh_debug "Loading extra config file: $custom_file"
+      fi
+      source "$custom_file"
+    fi
+  fi
+done
 
 # Clean up
 unset zsh_config_files
@@ -69,16 +61,11 @@ unset config_path
 unset basename
 unset custom_file
 
-# Reset path 
-source "$HOME/.zshenv"
-zsh_debug "Resetting PATH to .zshenv"
-zsh_debug "End PATH: $PATH"
-
 # ===================================================================
 # AUTO-ADDED CONTENT SECTION
 # ===================================================================
 # Tools may automatically append content below this line.
-# When you notice new content here, consider moving it to the 
+# When you notice new content here, consider moving it to the
 # appropriate module file in ~/.config/zsh/ for better organization:
 #
 # - For PATH additions:          → ~/.zshenv
@@ -87,7 +74,7 @@ zsh_debug "End PATH: $PATH"
 # - For completion settings:     → completion.zsh
 # - For core shell settings:     → core.zsh
 # - For prompt configurations:   → prompt.zsh
-# 
+#
 # Or create a new .zsh file for tool-specific configurations
 # ===================================================================
 
