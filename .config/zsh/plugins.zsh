@@ -29,8 +29,8 @@ load_plugin() {
     zsh_debug "Attempting to load plugin: $plugin_name"
   fi
   
-  for path in "${plugin_paths[@]}"; do
-    local plugin_path="$path/$plugin_name/$plugin_name.zsh"
+  for dir in "${plugin_paths[@]}"; do
+    local plugin_path="$dir/$plugin_name/$plugin_name.zsh"
     if [[ -f "$plugin_path" ]]; then
       if type zsh_debug &>/dev/null; then
         zsh_debug "Loading plugin $plugin_name from $plugin_path"

@@ -27,9 +27,9 @@ STARSHIP_PATHS=(
 )
 
 STARSHIP_PATH=""
-for path in "${STARSHIP_PATHS[@]}"; do
-  if [[ -x "$path" ]]; then
-    STARSHIP_PATH="$path"
+for candidate in "${STARSHIP_PATHS[@]}"; do
+  if [[ -x "$candidate" ]]; then
+    STARSHIP_PATH="$candidate"
     if type zsh_debug &>/dev/null; then
       zsh_debug "Found Starship at: $STARSHIP_PATH"
     fi
