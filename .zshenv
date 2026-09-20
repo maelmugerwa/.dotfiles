@@ -16,56 +16,42 @@ fi
 # This prevents "command not found" errors during initialization
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-# Set up PATH with priority order
+# Set up PATH with priority order (portable across Linux, macOS, WSL)
 typeset -U path  # Ensure PATH contains no duplicates
 path=(
   "$HOME/.local/bin"                       # User binaries
   "$HOME/.toolbox/bin"                     # Amazon toolbox-managed tools (axe, kiro-cli, etc.)
   "$HOME/bin"                              # Legacy user binaries
   "/usr/local/bin"                         # Locally compiled software
-  "/opt/homebrew/bin"                      # Homebrew on Apple Silicon
   "/usr/local/sbin"                        # Admin commands
-  
-  # WSL-specific paths for Windows interoperability
-  "/mnt/c/Program Files/PowerShell/7"      # PowerShell
-  "/mnt/c/Program Files/Alacritty"         # Alacritty terminal
-  "/mnt/c/Program Files/Git/cmd"           # Git for Windows
-  "/mnt/c/Program Files/dotnet"            # .NET Core
-  "/mnt/c/Program Files/GitExtensions"     # Git Extensions
-  "/mnt/c/Program Files/GitHub CLI"        # GitHub CLI
-  "/mnt/c/Program Files/Neovim/bin"        # Neovim
-  "/mnt/c/Program Files/nodejs"            # Node.js
-  "/mnt/c/Program Files/Meld"              # Meld diff tool
-  "/mnt/c/Program Files/Calibre2"          # Calibre
-  "/mnt/c/Program Files (x86)/Yarn/bin"    # Yarn
-  "/mnt/c/Program Files (x86)/Intel/iCLS Client"  # Intel components
-  "/mnt/c/Program Files/Intel/iCLS Client"
-  "/mnt/c/Program Files/Intel/WiFi/bin"
-  "/mnt/c/Program Files/Common Files/Intel/WirelessCommon"
-  "/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/DAL"
-  "/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/DAL"
-  "/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/IPT"
-  "/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/IPT"
-  
-  # Windows system paths
-  "/mnt/c/WINDOWS/system32"
-  "/mnt/c/WINDOWS"
-  "/mnt/c/WINDOWS/System32/Wbem"
-  "/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0"
-  "/mnt/c/WINDOWS/System32/OpenSSH"
-  
-  # Other paths
-  "/mnt/c/ProgramData/chocolatey/bin"      # Chocolatey package manager
-  "/mnt/c/Program Files/Docker/Docker/resources/bin"  # Docker
-  
-  # VSCode remote server path (dynamically changes)
-  "$HOME/.vscode-server/bin/*/bin/remote-cli"
-  
-  "/usr/lib/wsl/lib"                       # WSL libs
-  "/snap/bin"                              # Snap packages
-  
+  "/snap/bin"                              # Snap packages (Linux)
   $path                                    # Existing paths
 )
+
+# macOS only: Apple-Silicon Homebrew prefix.
+[[ "$OSTYPE" == darwin* ]] && path=("/opt/homebrew/bin" $path)
+
+# VS Code remote-cli: unquoted glob + (N) null-glob so a no-match drops the entry.
+# (Quoting left a literal '*' in PATH; a bare unquoted no-match aborts .zshenv.)
+path=($HOME/.vscode-server/bin/*/bin/remote-cli(N) $path)
+
+# WSL only: Windows interop paths. Guarded so they never load on native Linux/macOS.
+# Trimmed to tools used from Linux; add more under /mnt/c here as needed.
+if [[ -n "$WSL_DISTRO_NAME" ]]; then
+  path+=(
+    "/mnt/c/Program Files/PowerShell/7"
+    "/mnt/c/Program Files/Git/cmd"
+    "/mnt/c/Program Files/nodejs"
+    "/mnt/c/Program Files (x86)/Yarn/bin"
+    "/mnt/c/Program Files/Docker/Docker/resources/bin"
+    "/mnt/c/WINDOWS/system32"
+    "/mnt/c/WINDOWS"
+    "/mnt/c/WINDOWS/System32/Wbem"
+    "/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0"
+    "/mnt/c/WINDOWS/System32/OpenSSH"
+    "/usr/lib/wsl/lib"
+  )
+fi
 
 # Set up Homebrew early
 # This ensures Homebrew commands are available during zsh configuration
@@ -89,17 +75,23 @@ else
   export VISUAL="vi"
 fi
 
-# Language and locale settings
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
+# Language and locale. Prefer en_US.UTF-8; fall back to C.UTF-8 if it was never
+# generated (fresh Ubuntu/WSL without the `locales` package). Never hard-pin
+# LC_ALL: it forces a possibly-missing locale on every category, breaking setlocale().
+if locale -a 2>/dev/null | grep -qi '^en_US\.utf8$'; then
+  export LANG=en_US.UTF-8
+elif locale -a 2>/dev/null | grep -qi '^C\.utf8$'; then
+  export LANG=C.UTF-8
+fi
+unset LC_ALL
 
-# Terminal settings
-export TERM="xterm-256color"  # Enhanced terminal colors
+# TERM belongs to the terminal/tmux; set a fallback only when it is unset.
+: "${TERM:=xterm-256color}"
 
 # Less settings
 export LESS="-R"
 export LESSHISTFILE=-  # Disable .lesshst file
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
 # Added by AIM CLI
 export PATH="$HOME/.aim/mcp-servers:$PATH"
