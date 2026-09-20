@@ -33,10 +33,11 @@ fi
 # FZF utilities (file finding, but not history search - using mcfly instead)
 if command -v fzf &> /dev/null; then
   # Useful fzf shortcuts and helpers (but not history - that's handled by mcfly)
-  alias fcd="cd \$(find . -type d | fzf)"                   # Interactive cd
-  alias fopen="xdg-open \$(find . -type f | fzf)"           # Open file with default app
-  alias ff="find . -type f | fzf"                          # Find files
-  alias fd="find . -type d | fzf"                          # Find directories
+  # These use `fd` (respects FZF_EXCLUDES set in fzf-cd.zsh) instead of raw `find`
+  alias fcd='cd $(fd --type d --hidden --follow | fzf)'      # Interactive cd
+  alias fopen='xdg-open $(fd --type f --hidden --follow | fzf)'  # Open file with default app
+  alias ff='fd --type f --hidden --follow | fzf'             # Find files
+  alias fdz='fd --type d --hidden --follow | fzf'            # Find directories (renamed from `fd` to avoid clashing with the fd binary)
   
   # FZF color and UI settings
   export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --info=inline"

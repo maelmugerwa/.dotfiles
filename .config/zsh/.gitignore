@@ -1,0 +1,2 @@
+# Machine-local secrets — never commit.
+secrets.zsh

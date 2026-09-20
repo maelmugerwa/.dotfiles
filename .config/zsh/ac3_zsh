@@ -27,53 +27,6 @@
 # status = "script /bin/zsh -c set -x; eda fetch && eda st"
 # more eda @ https://code.amazon.com/packages/Eda/trees/mainline
 
-# start remote-component
-RC() { #$1 is first arg (here: port number)
-    kill $(lsof -t -i:"${1:-9091}")
-    xdg-open https://localhost:"${1:-9091}"/dist/local/definition.json
-    brazil-build webserver -- --port "${1:-9091}"
-}
-
-fetchStartRC() {
-    cd startRC
-    # for each directory under here, run a command
-    for dir in */; do
-        cd "$dir"
-        echo "Fetching in $dir"
-        rmrf && pl && brazil ws --sync --md && brazil ws clean && b --silent
-        ..
-    done
-}
-
-# start all RCs
-start() {
-    location=""
-    select choice in LDP AppBundle OSC 3p; do
-        case $choice in
-            LDP)
-                cd start/startLDP/src/CSC-UI-DataProxy-Local
-                ldp
-                break
-                ;;
-            AppBundle)
-                cd start/startAppBundle/src/CSC-UI-App-Bundle
-                appBundle
-                break
-                ;;
-            OSC)
-                cd start/startOSC/src/CSC-UI-Widget-SolveCard-OrderRetail
-                RC 9092
-                break
-                ;;
-            3p)
-                cd start/start3p/src/CSC-UI-Widget-3pResolutionWorkflow
-                RC 9091
-                break
-                ;;
-            *) echo "invalid option $REPLY";;
-        esac
-    done
-}
 
 searchVs() {
     vs=""

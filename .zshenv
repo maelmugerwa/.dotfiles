@@ -20,6 +20,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 typeset -U path  # Ensure PATH contains no duplicates
 path=(
   "$HOME/.local/bin"                       # User binaries
+  "$HOME/.toolbox/bin"                     # Amazon toolbox-managed tools (axe, kiro-cli, etc.)
   "$HOME/bin"                              # Legacy user binaries
   "/usr/local/bin"                         # Locally compiled software
   "/opt/homebrew/bin"                      # Homebrew on Apple Silicon
@@ -98,3 +99,12 @@ export TERM="xterm-256color"  # Enhanced terminal colors
 # Less settings
 export LESS="-R"
 export LESSHISTFILE=-  # Disable .lesshst file
+. "$HOME/.cargo/env"
+
+# Added by AIM CLI
+export PATH="$HOME/.aim/mcp-servers:$PATH"
+
+# Machine-local secrets (tokens, keys) kept out of version control.
+# secrets.zsh is gitignored (see .config/zsh/.gitignore). Sourced here so
+# non-interactive shells (crons, spawned subagents) get the exports too.
+[[ -f "$HOME/.config/zsh/secrets.zsh" ]] && source "$HOME/.config/zsh/secrets.zsh"

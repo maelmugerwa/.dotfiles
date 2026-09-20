@@ -19,13 +19,17 @@ if command -v bat &> /dev/null; then
 fi
 
 if command -v fd &> /dev/null; then
-  # fd - Modern replacement for find
-  alias find="fd"                        # Simpler syntax for finding files
+  # Use fd directly (don't alias find — breaks fzf, scripts, Makefiles that expect GNU find syntax)
+  # fd is already shorter than find, no alias needed
+  :
 fi
 
 if command -v rg &> /dev/null; then
   # ripgrep - Modern replacement for grep
-  alias grep="rg"                        # Faster searching in files
+  # Wrapper that falls back to real grep on regex incompatibilities
+  function grep {
+    rg "$@" 2>/dev/null || command grep "$@"
+  }
 fi
 
 if command -v nvim &> /dev/null; then
@@ -84,3 +88,9 @@ alias jl="just --list"                   # List available just recipes
 # Add your custom aliases below this line
 # Example:
 # alias mycommand="complex command with options"
+
+# MeshClaw
+alias mc_dashboard='echo "http://localhost:7777 (SSH tunnel: ssh -L 7777:localhost:7777 $(hostname -f))"'
+alias mc_restart='sudo systemctl restart meshclaw'
+alias mc_tail='sudo journalctl -u meshclaw -f'
+alias mc_status='sudo systemctl status meshclaw'

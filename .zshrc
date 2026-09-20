@@ -8,7 +8,7 @@ ZSH_CONFIG_DIR="$HOME/.config/zsh"
 
 # Load debug utility first if it exists (but only once)
 if [[ -f "$ZSH_CONFIG_DIR/debug.zsh" && -z "$ZSH_DEBUG_LOADED" ]]; then
-  export ZSH_DEBUG_LOADED=1
+  ZSH_DEBUG_LOADED=1
   source "$ZSH_CONFIG_DIR/debug.zsh"
   zsh_debug "Starting ZSH initialization (.zshrc)"
   zsh_debug "ZSH_CONFIG_DIR: $ZSH_CONFIG_DIR"
@@ -46,19 +46,19 @@ done
 
 zsh_debug "PATH before loading custom: $PATH"
 
-# # Load any custom ZSH files from ~/.config/zsh that don't match the core files
-# # This allows for additional customization without modifying core files
-# for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
-#   # Skip files we already loaded
-#   if [[ -f "$custom_file" ]]; then
-#     basename=${custom_file:t}
-#     if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
-#       zsh_debug "Loading custom config file: $custom_file"
-#       source "$custom_file"
-#       source "$HOME/.zshenv"
-#     fi
-#   fi
-# done
+# Load any custom ZSH files from ~/.config/zsh that don't match the core files
+# This allows for additional customization without modifying core files
+for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
+  # Skip files we already loaded
+  if [[ -f "$custom_file" ]]; then
+    basename=${custom_file:t}
+    if [[ ! " ${zsh_config_files[@]} " =~ " ${basename} " ]]; then
+      zsh_debug "Loading custom config file: $custom_file"
+      source "$custom_file"
+      source "$HOME/.zshenv"
+    fi
+  fi
+done
 
 zsh_debug "PATH before cleanup: $PATH"
 
@@ -92,3 +92,29 @@ zsh_debug "End PATH: $PATH"
 # ===================================================================
 
 # Content below will be preserved during updates
+
+# if you wish to use IMDS set AWS_EC2_METADATA_DISABLED=false
+
+export AWS_EC2_METADATA_DISABLED=true
+
+autoload -Uz compinit && compinit
+
+# Set up mise for runtime management
+eval "$("$HOME/.local/bin/mise" activate zsh)"
+source ~/.local/share/mise/completions.zsh
+[[ -f "$HOME/.brazil_completion/zsh_completion" ]] && source "$HOME/.brazil_completion/zsh_completion"
+alias finch='sudo HOME=$HOME DOCKER_CONFIG=$HOME/.docker finch'
+
+# Added by AIM CLI
+export PATH="$HOME/.aim/mcp-servers:$PATH"
+
+# MeshClaw
+[[ -d "$HOME/MeshClaw/src/MeshClaw/bin" ]] && export PATH="$HOME/MeshClaw/src/MeshClaw/bin:$PATH"
+
+# Eda autocompletion
+export EDA_AUTO="$HOME/.config/eda/completion"
+mkdir -p $EDA_AUTO
+eda completions zsh > $EDA_AUTO/_eda 2>/dev/null
+fpath=($EDA_AUTO $fpath)
+
+. "$HOME/.local/share/../bin/env"

@@ -7,11 +7,11 @@ compinit
 
 # Make completion system smarter
 zstyle ':completion:*' menu select              # Menu-style completion selection
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # Case insensitive matching
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'm:{a-zA-Z}={A-Za-z} r:|[._-]=* r:|=*' 'm:{a-zA-Z}={A-Za-z} l:|=* r:|=*'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"   # Colorize completion lists
 zstyle ':completion:*' verbose true             # Detailed completion information
 zstyle ':completion:*' group-name ''            # Group matches by type
-zstyle ':completion:*' completer _expand _complete _ignored _approximate  # Completion rules
+zstyle ':completion:*' completer _expand _complete _ignored  # No _approximate (conflicts with matcher-list fuzzy)
 
 # Cache completion for faster response
 zstyle ':completion::complete:*' use-cache on
