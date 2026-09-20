@@ -46,6 +46,21 @@ copy_to_clipboard() {
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
+# Ensure the en_US.UTF-8 locale exists. Fresh Ubuntu/WSL lack it, which causes
+# "setlocale: cannot change locale" warnings. .zshenv falls back to C.UTF-8,
+# but generate the real locale where we can.
+if [[ "$OS" == "Linux" ]] && ! locale -a 2>/dev/null | grep -qi '^en_US\.utf8$'; then
+  if command -v apt-get &> /dev/null; then
+    log_info "Generating en_US.UTF-8 locale (needs sudo)..."
+    sudo apt-get update -qq || true
+    sudo apt-get install -y locales > /dev/null 2>&1 || true
+    sudo locale-gen en_US.UTF-8 || true
+    sudo update-locale LANG=en_US.UTF-8 || true
+  else
+    log_warn "en_US.UTF-8 not generated; .zshenv will fall back to C.UTF-8."
+  fi
+fi
+
 # Install packages from Brewfile
 log_info "Installing packages from Brewfile..."
 brew bundle --file="$HOME/.config/homebrew/Brewfile"
@@ -65,6 +80,12 @@ if [ ! -d "$HOME/.local/bin" ]; then
   mkdir -p "$HOME/.local/bin"
   log_info "PATH to ~/.local/bin is already set in ~/.zshenv"
   log_success "Local bin directory created!"
+fi
+
+# Generate machine-specific local.zsh from the template if missing (gitignored)
+if [ ! -f "$HOME/.config/zsh/local.zsh" ] && [ -f "$HOME/.config/zsh/local.zsh.example" ]; then
+  cp "$HOME/.config/zsh/local.zsh.example" "$HOME/.config/zsh/local.zsh"
+  log_success "Created ~/.config/zsh/local.zsh from template."
 fi
 
 # Function for handling SSH key generation and setup

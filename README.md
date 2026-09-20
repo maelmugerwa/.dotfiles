@@ -1,6 +1,6 @@
 # Dotfiles
 
-Interactive setup for a complete development environment across Linux and macOS.
+Interactive setup for a complete development environment across Linux, macOS, and WSL2.
 
 ## Quick Installation
 
@@ -51,19 +51,13 @@ The installation script provides an interactive menu with options to:
 - [YADM Guide](.config/docs/YADM.md)
 
 ## TODO
-- Cleanup local.zsh & .zshenv to better handle WSL. Should hopefully retrieve bash or windows path and through var instead
-- Cleanup debug.zsh to not use shell commands which might not be available
-- Find a cleaner solution to avoid having to source .zshenv after each zsh config load
-- Re-enable debug.zsh in plugins.zsh
-- Delete repo_setup script as it's not needed on new machines
-- Move debug.zsh to its own folder to avoid it being loaded through custom loaders in .zshrc
-- Fix local.zsh currently tracked in git
-- fix below troubleshooting experienced on new WSL2 install
+- Delete repo_setup script; it is not needed on new machines
+- Optional: move debug.zsh to its own folder so custom loaders do not auto-source it
 
 ## Troubleshooting
 On new WSL2 install had to 
-- Add zsh as shell `which zsh | sudo tee -a /etc/shells`
-- Change default shell `chsh -s ${which zsh}`
+- Add zsh to approved shells `which zsh | sudo tee -a /etc/shells`
+- Change default shell `chsh -s "$(which zsh)"`
 - exit WSL and verify zsh
 - Install correct node version `fnm install 20 && fnm use 20 && fnm default 20`
 - Might need to update npm config if npm install fails `npm config set cache ~/.npm-cache --global && npm config set prefix ~/.npm-global --global`
