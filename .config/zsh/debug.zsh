@@ -4,15 +4,16 @@
 ZSH_DEBUG_DIR="$HOME/.config/zsh-debug"
 ZSH_DEBUG_FILE="$ZSH_DEBUG_DIR/zsh_debug.log"
 
-# Create debug directory if it doesn't exist
-if [[ ! -d "$ZSH_DEBUG_DIR" ]]; then
+# Create debug directory only when debugging is enabled (export ZSH_DEBUG=1)
+if [[ -n "$ZSH_DEBUG" && ! -d "$ZSH_DEBUG_DIR" ]]; then
   mkdir -p "$ZSH_DEBUG_DIR"
-  touch "$ZSH_DEBUG_FILE"
 fi
 
-# Debug logging function
+# Debug logging function. No-op unless ZSH_DEBUG is set, so a normal shell
+# never writes to $HOME. `print` is a zsh builtin (no external command).
 zsh_debug() {
-  echo "$1" >> "$ZSH_DEBUG_FILE"
+  [[ -n "$ZSH_DEBUG" ]] || return 0
+  print -r -- "$1" >> "$ZSH_DEBUG_FILE"
 }
 
 # Log header for new session

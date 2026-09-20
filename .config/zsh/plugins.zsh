@@ -105,7 +105,7 @@ if [[ -d "$local_plugins_dir" ]]; then
       # Extract plugin name from filename for logging
       local plugin_name=$(basename "$plugin_file" .zsh)
       
-      zsh_debug "Before loading local plugin $plugin_name - PATH: $PATH" >> ~/path_debug.log
+      zsh_debug "Before loading local plugin $plugin_name - PATH: $PATH"
       source "$plugin_file"
     fi
   done
