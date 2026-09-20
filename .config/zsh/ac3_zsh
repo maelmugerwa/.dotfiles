@@ -64,7 +64,7 @@ appBundle(){
         xdg-open https://localhost:9090/
         echo ""; command+=' -- --local-data-proxy="https://localhost:32323/graphql"'
     else
-        xdg-open https://ac3-test.aka.corp.amazon.com:9090/
+        xdg-open https://${AC3_TEST_HOST:-localhost}:9090/
         command+='-ws'
     fi
     echo "\n"; echo "$command"; eval "$command"
@@ -179,7 +179,7 @@ setAgentSkills() {
     read name
     echo "Enter skillId: " 
     read id
-    command="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+    command="curl -k --location --request POST 'https://${AC3_RC_HOST:-localhost}:32323/set-agent-skill' \
         --header 'Accept: application/json' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'skillName="${name}"' \
@@ -191,17 +191,17 @@ setBlendedSkills(){
         #   | HBS           | 30378241 |
         #   | LuxuryStores  | 32591571 |
         #   | PrimeWardrobe | 48781    |
-        hbs="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        hbs="curl -k --location --request POST 'https://${AC3_RC_HOST:-localhost}:32323/set-agent-skill' \
         --header 'Accept: application/json' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'skillName=HBS' \
         --data-urlencode 'skillId=Id=HBS_CA'"
-        tbyb="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        tbyb="curl -k --location --request POST 'https://${AC3_RC_HOST:-localhost}:32323/set-agent-skill' \
         --header 'Accept: application/json' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'skillName=TBYB' \
         --data-urlencode 'skillId=Id=PrimeWardrobe'"
-        lux="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/set-agent-skill' \
+        lux="curl -k --location --request POST 'https://${AC3_RC_HOST:-localhost}:32323/set-agent-skill' \
         --header 'Accept: application/json' \
         --header 'Content-Type: application/x-www-form-urlencoded' \
         --data-urlencode 'skillName=LuxuryStores' \
@@ -213,7 +213,7 @@ setBlendedSkills(){
 
 # clear agent skills in local
 clearAgentSkills() {
-    command="curl -k --location --request POST 'https://maelmug2.aka.corp.amazon.com:32323/clear-agent-skill' \
+    command="curl -k --location --request POST 'https://${AC3_RC_HOST:-localhost}:32323/clear-agent-skill' \
 --header 'Accept: application/json'"
     echo "$command"; eval "$command"
 }
