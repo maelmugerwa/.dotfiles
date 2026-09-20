@@ -7,6 +7,16 @@ export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 
+# Seed machine-local files from their tracked templates when missing (first run,
+# or after a pull that removed the old tracked local.zsh). Both are gitignored.
+if [[ ! -f "$HOME/.config/zsh/secrets.zsh" && -f "$HOME/.config/zsh/secrets.zsh.example" ]]; then
+  cp "$HOME/.config/zsh/secrets.zsh.example" "$HOME/.config/zsh/secrets.zsh"
+  chmod 600 "$HOME/.config/zsh/secrets.zsh"
+fi
+if [[ ! -f "$HOME/.config/zsh/local.zsh" && -f "$HOME/.config/zsh/local.zsh.example" ]]; then
+  cp "$HOME/.config/zsh/local.zsh.example" "$HOME/.config/zsh/local.zsh"
+fi
+
 # Ensure user bin directories exist
 if [[ ! -d "$HOME/.local/bin" ]]; then
   mkdir -p "$HOME/.local/bin"
@@ -82,6 +92,8 @@ if locale -a 2>/dev/null | grep -qiE '^en_US\.utf-?8$'; then
   export LANG=en_US.UTF-8
 elif locale -a 2>/dev/null | grep -qiE '^C\.utf-?8$'; then
   export LANG=C.UTF-8
+else
+  unset LANG   # neither locale exists; clear any bad inherited value (falls to C/POSIX)
 fi
 unset LC_ALL
 

@@ -62,6 +62,13 @@ On new WSL2 install had to
 - Install correct node version `fnm install 20 && fnm use 20 && fnm default 20`
 - Might need to update npm config if npm install fails `npm config set cache ~/.npm-cache --global && npm config set prefix ~/.npm-global --global`
 
+## Upgrading
+
+`local.zsh` and `secrets.zsh` are machine-specific and gitignored. Your next
+shell recreates each from its `.example` template if it is missing. After a
+`yadm pull`, open a new shell (or re-run bootstrap), then re-add any real values
+to `secrets.zsh` (tokens, `AC3_RC_HOST`, corp cert vars).
+
 ## License
 
 MIT
