@@ -1,6 +1,6 @@
 # .zshrc - Main ZSH configuration file
 # This file loads modular ZSH configuration from ~/.config/zsh
-source "$HOME/.zshenv"
+# zsh auto-sources ~/.zshenv before ~/.zshrc, so no explicit source is needed here.
 
 # Define base directory for ZSH configuration
 ZDOTDIR=${ZDOTDIR:-$HOME}
@@ -94,9 +94,11 @@ export AWS_EC2_METADATA_DISABLED=true
 
 autoload -Uz compinit && compinit
 
-# Set up mise for runtime management
-eval "$("$HOME/.local/bin/mise" activate zsh)"
-source ~/.local/share/mise/completions.zsh
+# Set up mise for runtime management (only if installed)
+if [[ -x "$HOME/.local/bin/mise" ]]; then
+  eval "$("$HOME/.local/bin/mise" activate zsh)"
+  [[ -f "$HOME/.local/share/mise/completions.zsh" ]] && source "$HOME/.local/share/mise/completions.zsh"
+fi
 [[ -f "$HOME/.brazil_completion/zsh_completion" ]] && source "$HOME/.brazil_completion/zsh_completion"
 alias finch='sudo HOME=$HOME DOCKER_CONFIG=$HOME/.docker finch'
 
@@ -106,10 +108,12 @@ export PATH="$HOME/.aim/mcp-servers:$PATH"
 # MeshClaw
 [[ -d "$HOME/MeshClaw/src/MeshClaw/bin" ]] && export PATH="$HOME/MeshClaw/src/MeshClaw/bin:$PATH"
 
-# Eda autocompletion
-export EDA_AUTO="$HOME/.config/eda/completion"
-mkdir -p $EDA_AUTO
-eda completions zsh > $EDA_AUTO/_eda 2>/dev/null
-fpath=($EDA_AUTO $fpath)
+# Eda autocompletion (only if eda is installed)
+if command -v eda &> /dev/null; then
+  export EDA_AUTO="$HOME/.config/eda/completion"
+  mkdir -p "$EDA_AUTO"
+  eda completions zsh > "$EDA_AUTO/_eda" 2>/dev/null
+  fpath=("$EDA_AUTO" $fpath)
+fi
 
-. "$HOME/.local/share/../bin/env"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
