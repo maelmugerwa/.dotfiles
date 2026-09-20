@@ -78,9 +78,9 @@ fi
 # Language and locale. Prefer en_US.UTF-8; fall back to C.UTF-8 if it was never
 # generated (fresh Ubuntu/WSL without the `locales` package). Never hard-pin
 # LC_ALL: it forces a possibly-missing locale on every category, breaking setlocale().
-if locale -a 2>/dev/null | grep -qi '^en_US\.utf8$'; then
+if locale -a 2>/dev/null | grep -qiE '^en_US\.utf-?8$'; then
   export LANG=en_US.UTF-8
-elif locale -a 2>/dev/null | grep -qi '^C\.utf8$'; then
+elif locale -a 2>/dev/null | grep -qiE '^C\.utf-?8$'; then
   export LANG=C.UTF-8
 fi
 unset LC_ALL
