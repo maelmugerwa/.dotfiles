@@ -1,0 +1,49 @@
+# local.zsh.example - template for machine-specific ZSH configuration.
+#
+# The installer copies this to local.zsh on first run. local.zsh is GITIGNORED,
+# so machine-specific values never reach the shared repo. Edit local.zsh freely.
+
+# --- WSL: resolve the Windows username (skipped on native Linux/macOS) ---
+# Ask Windows directly. Never trust the /mnt/c/Users listing: it always contains
+# the Default / Public / All Users system profiles. Override with:
+#   export WSL_WINDOWS_USER=<name>
+WINDOWS_USERNAME=""
+if [[ -n "$WSL_DISTRO_NAME" && -d "/mnt/c/Users" ]]; then
+  # 0. Explicit override wins.
+  [[ -n "$WSL_WINDOWS_USER" ]] && WINDOWS_USERNAME="$WSL_WINDOWS_USER"
+  # 1. Authoritative: ask cmd.exe for the logged-in Windows user.
+  if [[ -z "$WINDOWS_USERNAME" && -x /mnt/c/WINDOWS/system32/cmd.exe ]]; then
+    WINDOWS_USERNAME=$(/mnt/c/WINDOWS/system32/cmd.exe /c 'echo %USERNAME%' 2>/dev/null | /usr/bin/tr -d '\r')
+  fi
+  # 2. Fallback: scan /mnt/c/Users but reject the system profiles.
+  if [[ -z "$WINDOWS_USERNAME" ]]; then
+    for dir in /mnt/c/Users/*(/N); do
+      cand=${dir:t}
+      case "$cand" in Default|Default*|Public|"All Users"|defaultuser0) continue ;; esac
+      [[ -d "$dir/AppData" ]] && { WINDOWS_USERNAME="$cand"; break; }
+    done
+  fi
+  # 3. Last resort: current Linux user (absolute path survives a stripped PATH).
+  [[ -z "$WINDOWS_USERNAME" ]] && WINDOWS_USERNAME=$(/usr/bin/whoami)
+fi
+
+# --- WSL: add Windows user PATH entries (only when a username resolved) ---
+if [[ -n "$WSL_DISTRO_NAME" && -n "$WINDOWS_USERNAME" ]]; then
+  typeset -U path
+  path+=(
+    "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/oh-my-posh/bin"
+    "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Microsoft/WindowsApps"
+    "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Microsoft/WinGet/Links"
+    "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Roaming/npm"
+    "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Programs/Microsoft VS Code/bin"
+    "/mnt/c/Users/${WINDOWS_USERNAME}/AppData/Local/Yarn/bin"
+  )
+fi
+
+# --- Machine-specific overrides (examples) ---
+# export MY_LOCAL_VAR="/path/specific/to/this/machine"
+# path+=("$HOME/my-local-bin")
+# alias work="cd $HOME/projects/work"
+
+# Secrets (QUIP_API_TOKEN, corp cert vars, etc.) live in the gitignored
+# ~/.config/zsh/secrets.zsh, sourced from ~/.zshenv. Keep tokens out of this file.

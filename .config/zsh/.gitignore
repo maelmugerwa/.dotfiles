@@ -1,2 +1,4 @@
 # Machine-local secrets — never commit.
 secrets.zsh
+# Machine-specific config — generated from local.zsh.example by the installer.
+local.zsh
