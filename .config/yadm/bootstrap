@@ -169,6 +169,49 @@ yadm remote set-url origin "git@github.com:maelmugerwa/.dotfiles.git"
 log_success "Remote URL updated to use SSH!"
 
 
+# ---------------------------------------------------------------------------
+# Self-check: exercise a real zsh startup and report health. NON-FATAL.
+# Catches platform-specific breakage (PATH clobber, locale, WSL paths) at
+# install time instead of silently. Never aborts the installer.
+# ---------------------------------------------------------------------------
+run_self_check() {
+  local warns=0 out pathout wu
+  out="$(zsh -ic 'true' 2>&1)" || true
+  pathout="$(zsh -ic 'print -rl -- $path' 2>/dev/null)" || true
+
+  if ! zsh -ic 'command -v ls >/dev/null && command -v basename >/dev/null && command -v whoami >/dev/null' 2>/dev/null; then
+    log_warn "self-check: core commands (ls/basename/whoami) not on PATH"; warns=1
+  fi
+  if printf '%s\n' "$out" | grep -qi 'setlocale'; then
+    log_warn "self-check: setlocale warning on startup (locale not generated?)"; warns=1
+  fi
+  if printf '%s\n' "$out" | grep -qiE 'command not found|no such file'; then
+    log_warn "self-check: startup emitted command-not-found / missing-file noise"; warns=1
+  fi
+  if printf '%s\n' "$pathout" | grep -q '[*]'; then
+    log_warn "self-check: a literal '*' is in PATH (unexpanded glob)"; warns=1
+  fi
+  if [[ -z "${WSL_DISTRO_NAME:-}" ]] && printf '%s\n' "$pathout" | grep -q '^/mnt/c'; then
+    log_warn "self-check: /mnt/c entries in PATH on a non-WSL host"; warns=1
+  fi
+  if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
+    wu="$(zsh -ic 'print -r -- $WINDOWS_USERNAME' 2>/dev/null)" || true
+    case "$wu" in
+      ""|Default|Default*|Public|"All Users"|defaultuser0)
+        log_warn "self-check: WINDOWS_USERNAME='$wu' (set WSL_WINDOWS_USER in secrets.zsh)"; warns=1 ;;
+    esac
+  fi
+
+  if [[ $warns -eq 0 ]]; then
+    log_success "Shell self-check passed: PATH, locale, and platform guards look healthy."
+  else
+    log_warn "Shell self-check found warnings above. Re-run manually to inspect:"
+    echo "    zsh -ic 'which ls basename whoami; print -rl -- \$path | head; locale; echo WSL_USER=\$WINDOWS_USERNAME'"
+  fi
+}
+# Never let the self-check abort the installer.
+run_self_check || true
+
 # Complete bootstrap with instructions for switching to zsh
 log_success "Bootstrap completed successfully!"
 
