@@ -1,12 +1,8 @@
-# Starship configuration file
-
-# Get editor completions based on the config schema
+# The schema key drives editor completions.
 "$schema" = 'https://starship.rs/config-schema.json'
 
-# Inserts a blank line between shell prompts
 add_newline = true
 
-# Main prompt format
 format = """
 $directory$git_branch\
 $git_status\
@@ -22,7 +18,7 @@ $battery\
 $line_break\
 $character"""
 
-# Directory display with git branch integrated
+# The branch is appended here by git_branch, not printed on its own.
 [directory]
 truncation_length = 3
 truncation_symbol = "…/"
@@ -31,12 +27,11 @@ style = "bold blue"
 format = "[$path]($style)"
 repo_root_format = "[$path]($style)[$repo]($style)"
 
-# Disable standard git branch module since we're handling it in directory
+# git_branch prints ":branch" directly after the directory path.
 [git_branch]
 disabled = false
 format = "[:](bold blue)[$branch](bold green)"
 
-# Git status with custom format
 [git_status]
 format = " [ ${conflicted}${ahead_behind}${modified}${stashed} ]($style)"
 conflicted = "${([≠](bold red))}${( | )}"
@@ -47,14 +42,14 @@ modified = "${([!${count}](yellow))}"
 stashed = "${( | )}${([S${count}](dim blue))}"
 style = "bold white"
 
-# Combined command execution time with exit code
+# cmd_duration prints the exit status next to the duration.
 [cmd_duration]
 min_time = 2000
 format = " [⏱️ ${status}$duration]($style)"
 style = "yellow"
 show_milliseconds = false
 
-# Status integration with cmd_duration
+# The status module only supplies $status to cmd_duration.
 [status]
 disabled = false
 format = "$status in "
@@ -62,7 +57,6 @@ style = "bold red"
 map_symbol = false
 pipestatus = false
 
-# Programming language modules with logo emojis
 [nodejs]
 format = " [⬢ $version](bold green) "
 detect_extensions = ["js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "json"]
@@ -88,17 +82,15 @@ format = " [🔵 $version](bold purple) "
 detect_extensions = ["cs", "csproj", "fs", "fsproj"]
 detect_files = ["global.json", "project.json", ".csproj", ".fsproj"]
 
-# Docker context
 [docker_context]
 format = " [🐳 $context](blue bold) "
 detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
 
-# AWS profile
 [aws]
 format = " [☁️ $profile]($style) "
 style = "bold yellow"
 
-# Battery status (only shows when below threshold)
+# Empty symbols hide the battery unless it discharges below 20 percent.
 [battery]
 format = "[$symbol]($style) "
 full_symbol = ""
@@ -107,7 +99,6 @@ discharging_symbol = "[🪫](red bold)"
 disabled = false
 display = [{ threshold = 20 }]
 
-# Command character
 [character]
 success_symbol = "[>](green)"
 error_symbol = "[>](red)"

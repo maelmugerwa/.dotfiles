@@ -1,35 +1,25 @@
 # Neovim Configuration
 
-This directory contains the Neovim configuration files that are part of the dotfiles repository.
-
-## Overview
-
-The configuration is designed to be simple, yet functional with good defaults for development. It uses a modular structure for better organization and easier maintenance.
+A plugin-free Neovim setup with good defaults, split across four files.
 
 ## Modular Structure
 
-The configuration is split into multiple files:
+- `init.vim` - entry point. Loads the other files.
+- `options.vim` - settings and options
+- `keymaps.vim` - key mappings
+- `plugins.vim` - plugin management. A placeholder today.
+- `lua/` - Lua modules. Empty today.
+- `after/plugin/` - per-plugin configuration. Empty today.
+- `undodir/` - persistent undo history
 
-- `init.vim` - Main entry point that loads all other configuration files
-- `options.vim` - All Neovim settings and options 
-- `keymaps.vim` - Key mappings and keyboard shortcuts
-- `plugins.vim` - Plugin management (currently a placeholder)
-- `lua/` - Directory for Lua-based configurations (for future use)
-- `after/plugin/` - Plugin-specific configurations (for future use)
-- `undodir/` - Directory for persistent undo history
-
-This structure makes it easy to:
-- Find specific settings
-- Add or modify configurations without changing everything
-- Maintain separation of concerns
+One file per concern, so you can find a setting and change it alone.
 
 ## Features
 
-- **Clean Interface**: Line numbers, cursor highlighting, and clear visual indicators
-- **Smart Editing**: Proper indentation, spacing, and line wrapping
-- **Efficient Navigation**: Keyboard shortcuts for buffers and window management
-- **Optimized Settings**: Faster completion, improved search, and better system integration
-- **Modular Design**: Easy to extend and maintain
+- **Clean interface**: line numbers, cursor highlighting, clear indicators
+- **Smart editing**: indentation, spacing and line wrapping
+- **Efficient navigation**: shortcuts for buffers and windows
+- **Tuned settings**: faster completion, better search, system clipboard
 
 ## Key Mappings
 
@@ -68,25 +58,25 @@ The leader key is set to `Space`. See `keymaps.vim` for a complete list of mappi
 
 ### Adding Plugins
 
-To add plugins, you can:
-
-1. Uncomment the plugin manager section in `plugins.vim`
-2. Add your desired plugins
-3. Source `plugins.vim` from `init.vim`
-4. Run the plugin installation command
+1. Uncomment the plugin manager section in `plugins.vim`.
+2. Add the plugins you want.
+3. Source `plugins.vim` from `init.vim`.
+4. Run the plugin manager's install command.
 
 ### Plugin-Specific Configurations
 
-Place plugin-specific settings in:
-- `after/plugin/[plugin-name].vim` for VimScript configurations
-- `lua/[plugin-name].lua` for Lua-based configurations
+Put per-plugin settings in one of these:
+
+- `after/plugin/[plugin-name].vim` for VimScript
+- `lua/[plugin-name].lua` for Lua
 
 ### Future Plans
 
-The configuration is ready to be expanded with:
-- Plugin management (vim-plug, packer, or lazy.nvim)
-- LSP configuration for intelligent code completions
-- Treesitter for better syntax highlighting
+Candidates for expansion:
+
+- A plugin manager: vim-plug, packer or lazy.nvim
+- LSP for code completion
+- Treesitter for syntax highlighting
 - Telescope for fuzzy finding
 
 ## References

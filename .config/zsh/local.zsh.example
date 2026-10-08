@@ -1,7 +1,8 @@
 # local.zsh.example - template for machine-specific ZSH configuration.
 #
-# The installer copies this to local.zsh on first run. local.zsh is GITIGNORED,
-# so machine-specific values never reach the shared repo. Edit local.zsh freely.
+# .zshenv and the installer both copy this to local.zsh on first run.
+# local.zsh is GITIGNORED, so your machine's values never reach the repo.
+# Edit local.zsh freely.
 
 # --- WSL: resolve the Windows username (skipped on native Linux/macOS) ---
 # Ask Windows directly. Never trust the /mnt/c/Users listing: it always contains
@@ -23,7 +24,8 @@ if [[ -n "$WSL_DISTRO_NAME" && -d "/mnt/c/Users" ]]; then
       [[ -d "$dir/AppData" ]] && { WINDOWS_USERNAME="$cand"; break; }
     done
   fi
-  # 3. Last resort: current Linux user (absolute path survives a stripped PATH).
+  # 3. Last resort: the current Linux user.
+  # Call whoami by absolute path, so a stripped PATH cannot break it.
   [[ -z "$WINDOWS_USERNAME" ]] && WINDOWS_USERNAME=$(/usr/bin/whoami)
 fi
 

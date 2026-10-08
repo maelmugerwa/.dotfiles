@@ -1,36 +1,21 @@
-" init.vim - Main Neovim configuration file
-" This is the entry point for the Neovim configuration
+" init.vim - Neovim entry point.
 
-" Load external configuration files
-" ----------------------------------------
-
-" Load plugin configurations (when ready)
+" plugins.vim stays unloaded until you install a plugin manager.
 " source $HOME/.config/nvim/plugins.vim
 
-" Load editor options
 source $HOME/.config/nvim/options.vim
 
-" Load keybindings
 source $HOME/.config/nvim/keymaps.vim
 
-" ----------------------------------------
-" Create required directories
-" ----------------------------------------
+" undofile needs undodir to exist, so create it.
 if !isdirectory($HOME . "/.config/nvim/undodir")
   call mkdir($HOME . "/.config/nvim/undodir", "p")
 endif
 
-" ----------------------------------------
-" Advanced configurations (when ready)
-" ----------------------------------------
-" Uncomment these lines as you expand your configuration
-
-" Lua configurations
+" Uncomment to load the Lua config.
 " lua require('init')
 
-" ----------------------------------------
 " Notes
-" ----------------------------------------
-" - Additional plugin configurations go in after/plugin/
-" - Custom Lua modules go in lua/
-" - For machine-specific settings, consider creating local.vim
+" - Put extra plugin configuration in after/plugin/.
+" - Put Lua modules in lua/.
+" - Put machine-specific settings in local.vim.

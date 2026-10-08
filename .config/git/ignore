@@ -1,0 +1,76 @@
+# ===========================================================================
+# $HOME safety denylist. Keep this block first.
+#
+# The yadm work-tree is $HOME, so `yadm add -A` reaches every file here.
+# This block makes the dangerous ones unstageable. Visibility alone is not
+# enough: yadm's configure_repo() writes status.showUntrackedFiles=no into
+# the repo's untracked local config, so every fresh clone starts blind.
+# bootstrap re-applies `normal`, and these patterns are the backstop.
+# ===========================================================================
+
+# Credentials and keys. Never commit.
+.aws/
+.ssh/*
+!.ssh/config
+.gnupg/
+.midway/
+.kube/
+.netrc
+*.token
+*.pem
+*credential*
+
+# Machine-local shell files. .zshrc sources local.zsh; secrets.zsh holds tokens.
+# Both also sit in .config/zsh/.gitignore, which covers them inside this repo.
+.config/zsh/local.zsh
+.config/zsh/secrets.zsh
+
+# Tool state, caches and telemetry. Large, machine-local, never useful here.
+.cache/
+.cargo/
+.local/
+.claude/
+.claude.json*
+.config/Code/
+.config/JetBrains/
+.config/chromium/
+.config/google-chrome-for-testing/
+.config/go/telemetry/
+.config/pulse/
+.config/ada/
+.config/rde/
+.config/smithy-mcp/
+.config/zsh-debug/
+
+# Generated or per-machine tool state. Not dangerous, just not dotfiles.
+.config/brazil/
+.config/cr/
+.config/eda/completion/
+.config/last30days/
+.config/mechanic/
+.config/uv/
+.config/fish/conf.d/
+
+# OS and editor files
+.DS_Store
+*.swp
+*.swo
+*~
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Package directories
+node_modules/
+__pycache__/
+*.py[cod]
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Build outputs
+dist/
+build/

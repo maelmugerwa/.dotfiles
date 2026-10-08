@@ -1,72 +1,74 @@
-# Homebrew Bundle - Automated package installation
+# Packages installed by `brew bundle`.
 
 # Core development tools
-brew "gcc"                        # GNU compiler collection (commands: gcc, g++)
-brew "git"                        # Version control system (command: git)
-brew "gh"                         # GitHub CLI (command: gh)
-brew "yadm"                       # Yet Another Dotfiles Manager (command: yadm)
+brew "gcc"                        # GNU compiler collection. Commands: gcc, g++
+brew "git"
+brew "gh"                         # GitHub CLI
+brew "yadm"                       # Dotfiles manager
 
 # Shell and terminal enhancements
-brew "zsh"                        # Z Shell - powerful interactive shell (command: zsh)
-brew "zsh-completions"            # Additional completions for zsh (auto-loaded by zsh)
-brew "zsh-autosuggestions"        # Fish-like autosuggestions for zsh (loaded in .zshrc)
-brew "zsh-syntax-highlighting"    # Syntax highlighting for zsh (loaded in .zshrc)
-brew "zsh-history-substring-search" # Fish-like history search with up/down arrows
-brew "starship"                   # Cross-shell prompt (run: starship init)
-brew "fzf"                        # Fuzzy finder for command-line (file searching)
-brew "thefuck"                    # Command correction tool (run: thefuck COMMAND)
-brew "direnv"                     # Environment switcher (enable with: direnv allow)
-# brew "atuin"                    # Replaced by mcfly for shell history
-brew "mcfly"                      # Smart shell history search with context awareness
-brew "zoxide"                     # Smarter cd command (use: z directory)
+brew "zsh"
+brew "zsh-completions"            # Extra completions. zsh auto-loads them.
+brew "zsh-autosuggestions"        # Autosuggestions. .zshrc loads it.
+brew "zsh-syntax-highlighting"    # Syntax highlighting. .zshrc loads it.
+brew "zsh-history-substring-search" # History search on the up and down arrows
+brew "starship"                   # Cross-shell prompt. Run: starship init
+brew "fzf"                        # Fuzzy finder for files
+brew "thefuck"                    # Corrects a mistyped command. Run: thefuck COMMAND
+brew "direnv"                     # Per-directory environment switcher. Run: direnv allow
+# brew "atuin"                    # mcfly covers shell history
+brew "mcfly"                      # Shell history search with context
+brew "zoxide"                     # Smarter cd. Use: z directory
 
 # Modern CLI replacements
-brew "bat"                        # Cat clone with syntax highlighting (command: bat)
-brew "eza"                        # Modern replacement for ls (commands: eza, aliased to ls)
-brew "fd"                         # Simple, fast alternative to find (command: fd)
-brew "ripgrep"                    # Fast grep alternative (command: rg)
-brew "difftastic"                 # Structural diff tool that understands syntax (command: difft)
+brew "bat"                        # Cat with syntax highlighting
+brew "eza"                        # Replaces ls. Commands: eza, and the ls alias
+brew "fd"                         # Faster find
+brew "ripgrep"                    # Faster grep. Command: rg
+brew "difftastic"                 # Structural diff that reads syntax. Command: difft
+brew "git-delta"                  # Syntax-highlighting git pager. Command: delta
 
 # Terminal UI tools
-brew "lazygit"                    # Terminal UI for git commands (run: lazygit)
-brew "lazydocker"                 # Terminal UI for docker management (run: lazydocker)
-brew "btop"                       # Resource monitor with visuals (command: btop)
-brew "neovim"                     # Hyperextensible Vim-based text editor (command: nvim)
+brew "lazygit"                    # Terminal UI for git
+brew "lazydocker"                 # Terminal UI for docker
+brew "btop"                       # Resource monitor
+brew "neovim"                     # Vim-based editor. Command: nvim
 
 # Data processing tools
-brew "jq"                         # Command-line JSON processor (command: jq)
-brew "httpie"                     # User-friendly HTTP client (command: http)
+brew "jq"                         # JSON processor
+brew "httpie"                     # HTTP client. Command: http
 
 # Development environment managers
-brew "fnm"                        # Fast Node.js version manager (commands: fnm use, fnm install)
-brew "pyenv"                      # Python version manager (commands: pyenv install, pyenv global)
+# mise manages node, python and go in one tool, with one config.
+# Versions live in ~/.config/mise/config.toml (tracked).
+brew "mise"
 
 # Containers and local models
-brew "docker"                     # Docker CLI (command: docker)
-brew "colima"                     # Container runtime for Docker without Desktop (command: colima)
-brew "ollama"                     # Run LLMs locally (command: ollama)
+brew "docker"
+brew "colima"                     # Docker runtime without Docker Desktop
+brew "ollama"                     # Runs LLMs locally
 
 # Utilities
-brew "just"                       # Modern command runner (command: just)
+brew "just"                       # Command runner
 
-# Linux-only: xclip needs X11 and has no use on macOS (pbcopy covers it)
+# xclip needs X11. macOS uses pbcopy instead.
 if OS.linux?
-  brew "xclip"                    # X11 clipboard tool (commands: xclip, xclip -o)
+  brew "xclip"                    # X11 clipboard. Read with: xclip -o
 end
 
-# macOS-only: Homebrew on Linux has no cask support, so an unguarded cask
-# line makes `brew bundle` fail and aborts the whole bootstrap.
+# Homebrew on Linux has no cask support. An unguarded cask line fails
+# `brew bundle` and aborts the whole bootstrap.
 if OS.mac?
   # Editors and AI coding agents
-  cask "visual-studio-code"       # Code editor (command: code)
-  cask "claude-code"              # Terminal-based AI coding assistant (command: claude)
-  cask "codex"                    # OpenAI terminal coding agent (command: codex)
+  cask "visual-studio-code"       # Code editor. Command: code
+  cask "claude-code"              # Terminal AI coding assistant. Command: claude
+  cask "codex"                    # OpenAI terminal coding agent
 
   # Window, keyboard, and menu-bar control
-  cask "rectangle"                # Window snapping via keyboard shortcuts
-  cask "karabiner-elements"       # Keyboard remapping
-  cask "bettertouchtool"          # Trackpad and input gesture customisation
-  cask "bartender"                # Menu-bar icon management
+  cask "rectangle"                # Snaps windows with keyboard shortcuts
+  cask "karabiner-elements"       # Remaps the keyboard
+  cask "bettertouchtool"          # Customises trackpad and input gestures
+  cask "bartender"                # Manages menu-bar icons
   cask "alfred"                   # Launcher and clipboard history
   cask "domzilla-caffeine"        # Keeps the system awake
 

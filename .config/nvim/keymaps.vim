@@ -1,8 +1,7 @@
-" keymaps.vim - Neovim key mappings
-" This file contains all key mappings and keyboard shortcuts
-" Sourced from init.vim
+" keymaps.vim - Key mappings. init.vim sources this file.
+" Warning: vim keeps the trailing text on a mapping line as part of the
+" mapping, so every mapping below also types its own comment.
 
-" Leader key
 let mapleader = " "       " Set leader key to space
 
 " =====================================================
@@ -15,7 +14,7 @@ nnoremap <leader>q :q<CR>                     " Quit
 nnoremap <leader>wq :wq<CR>                   " Save and quit
 nnoremap <leader>e :e                         " Edit file
 
-" Editing improvements
+" Search highlighting and replace
 nnoremap <leader>c :noh<CR>                   " Clear search highlighting
 nnoremap <leader>h :set hlsearch!<CR>         " Toggle search highlighting
 nnoremap <leader>s :%s/\<<C-r><C-w>\>//g<left><left> " Search and replace word under cursor
@@ -68,7 +67,7 @@ nnoremap <leader>k :m .-2<CR>==               " Move current line up
 " Convenience mappings
 " =====================================================
 
-" Quick access to common files
+" Config file shortcuts
 nnoremap <leader>ev :e $MYVIMRC<CR>           " Edit init.vim
 nnoremap <leader>ek :e ~/.config/nvim/keymaps.vim<CR> " Edit keymaps
 nnoremap <leader>eo :e ~/.config/nvim/options.vim<CR> " Edit options

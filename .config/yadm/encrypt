@@ -1,4 +1,9 @@
+# Patterns for `yadm encrypt`. This file does nothing until you run that
+# command. See .config/docs/YADM.md.
+#
+# .ssh/config is deliberately absent: it is tracked in plaintext and holds only
+# generic GitHub settings. Put machine-specific hosts in ~/.ssh/config.local.
 .ssh/id_ed25519
-.ssh/config
+.ssh/id_ed25519-2
 .ssh/id_rsa
 .gnupg/*.gpg

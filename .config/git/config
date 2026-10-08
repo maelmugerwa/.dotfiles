@@ -1,0 +1,223 @@
+# Git reads this file as $XDG_CONFIG_HOME/git/config. Name it exactly `config`.
+# Git never reads a `.gitconfig` inside this directory.
+#
+# Identity is absent on purpose. `git config --global` writes to ~/.gitconfig,
+# which stays untracked and machine-local. So axe and this repo never conflict.
+# ~/.gitconfig also wins over this file for any duplicate key.
+
+# ============================================================================
+# CORE SETTINGS
+# ============================================================================
+
+[core]
+  editor = vim
+
+  # No excludesFile here on purpose. Git auto-detects
+  # $XDG_CONFIG_HOME/git/ignore whenever core.excludesFile is unset.
+
+  # Fall back to less. Bootstrap treats a failed Brewfile as non-fatal.
+  pager = command -v delta > /dev/null && delta || less
+
+  # Keep LF in the repo on cross-platform projects. Checkout does not convert.
+  autocrlf = input
+
+  # Fix trailing spaces. Warn on spaces before tabs and space indentation.
+  whitespace = fix,space-before-tab,indent-with-non-tab,trailing-space
+
+# ============================================================================
+# INITIALIZATION SETTINGS
+# ============================================================================
+
+[init]
+  # `main` is the inclusive default branch name.
+  defaultBranch = main
+
+# ============================================================================
+# PULL SETTINGS
+# ============================================================================
+
+[pull]
+  rebase = false
+
+# ============================================================================
+# PUSH SETTINGS
+# ============================================================================
+
+[push]
+  default = simple
+
+  # Drops the need for `--set-upstream` on a first push.
+  autoSetupRemote = true
+
+# ============================================================================
+# COLOR SETTINGS
+# ============================================================================
+
+[color]
+  ui = auto
+
+# ============================================================================
+# ALIASES - QUICK COMMANDS FOR COMMON OPERATIONS
+# ============================================================================
+
+[alias]
+  # ==========================================================================
+  # STATUS & INFORMATION COMMANDS
+  # ==========================================================================
+
+  # Compact view of changed files only. Example: git s
+  s = status -s
+
+  # Full working-directory state. Example: git st
+  st = status
+
+  # Second name for status, for muscle memory. Example: git stat
+  stat = status
+
+  # ==========================================================================
+  # BRANCHING OPERATIONS
+  # ==========================================================================
+
+  # Example: git co main
+  co = checkout
+
+  # Create a branch and switch to it. Example: git cb feature/new-login-ui
+  cb = checkout -b
+
+  # List local branches. Example: git b
+  b = branch
+
+  # List local and remote branches. Example: git branches
+  branches = branch -a
+
+  # ==========================================================================
+  # COMMIT OPERATIONS
+  # ==========================================================================
+
+  # Example: git cm "Add login button styling"
+  cm = commit -m
+
+  # Amend the last commit and edit its message. Example: git ca
+  ca = commit --amend
+
+  # Add staged work to the last commit. Keeps the message. Example: git amend
+  amend = commit --amend --no-edit
+
+  # ==========================================================================
+  # STAGING OPERATIONS
+  # ==========================================================================
+
+  # Stage every modified and untracked file. Example: git aa
+  aa = add -A
+
+  # Stage selected hunks, to split one file across commits. Example: git ap
+  ap = add -p
+
+  # ==========================================================================
+  # LOG & HISTORY VIEWING
+  # ==========================================================================
+
+  # Graph of history and branch structure. Example: git lg
+  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+  # Compact list of recent commits. Example: git ll
+  ll = log --oneline
+
+  # Full history of one file, with patches. Example: git history path/to/file.js
+  history = log --follow -p --
+
+  # Show the newest commit. Example: git last
+  last = log -1 HEAD
+
+  # ==========================================================================
+  # DIFF OPERATIONS
+  # ==========================================================================
+
+  # Review unstaged changes. Example: git d
+  d = diff
+
+  # Review what the next commit will contain. Example: git ds
+  ds = diff --staged
+
+  # ==========================================================================
+  # REMOTE OPERATIONS
+  # ==========================================================================
+
+  # Download remote changes without merging. Example: git fet
+  fet = fetch
+
+  # Shorter name for fetch. Example: git f
+  f = fetch
+
+  # Update the branch and drop stale remote branches. Example: git up
+  up = !git pull --rebase --prune $@
+
+  # ==========================================================================
+  # RESET & CLEANUP OPERATIONS
+  # ==========================================================================
+
+  # Unstage a file and keep its changes. Example: git unstage file.txt
+  unstage = reset HEAD --
+
+  # Revert a modified file to its committed state. Example: git discard file.txt
+  discard = checkout --
+
+  # Undo the last commit and keep the changes staged. Example: git uncommit
+  uncommit = reset --soft HEAD~1
+
+  # ==========================================================================
+  # STASH OPERATIONS
+  # ==========================================================================
+
+  # Store changes to switch tasks. Example: git save
+  save = stash push
+
+  # Apply the newest stash and remove it. Example: git pop
+  pop = stash pop
+
+  # List available stashes. Example: git list-stash
+  list-stash = stash list
+
+  # ==========================================================================
+  # FILE MANAGEMENT & INFORMATION
+  # ==========================================================================
+
+  # List tracked files. Example: git ls
+  ls = ls-files
+
+  # Show global and local settings. Example: git config-list
+  config-list = config --list
+
+  # Search the repository with line numbers. Example: git find "function search"
+  find = grep -n
+
+  # ==========================================================================
+  # REPOSITORY OVERVIEW
+  # ==========================================================================
+
+  # Graph plus file stats for the last two weeks. Example: git overview
+  overview = !git log --stat --since='2 weeks' --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+  # List every configured alias. Example: git aliases
+  aliases = !git config --get-regexp '^alias\\.' | sed 's/alias\\.\\([^ ]*\\) \\(.*\\)/\\1\\t=> \\2/' | sort
+
+[delta]
+  line-numbers = true
+  side-by-side = false
+  navigate = true
+  light = false
+
+[fetch]
+  prune = true
+
+[diff]
+  colorMoved = default
+
+[merge]
+  conflictstyle = diff3
+
+[rebase]
+  autosquash = true
+
+[help]
+  autocorrect = 10

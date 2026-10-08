@@ -1,20 +1,17 @@
 # Plugin Configurations
 
-This directory contains plugin-specific configuration files that are loaded automatically after plugins have been loaded. This follows Neovim's conventional `after/plugin` structure.
+Put per-plugin configuration here. This directory is empty today.
 
-## How It Works
-
-Files in this directory are loaded automatically after Neovim has loaded the plugins. This ensures that plugin-specific settings are applied after the plugins themselves are initialized.
+Neovim loads every file in `after/plugin` once the plugins themselves have
+loaded. Your settings therefore override plugin defaults.
 
 ## Best Practices
 
-- Create one file per plugin or per related group of plugins
-- Name files after the plugins they configure (`telescope.vim`, `lsp.vim`, etc.)
-- Keep plugin-specific mappings and settings in these files
+- Write one file per plugin, or per related group.
+- Name each file after the plugin it configures, such as `telescope.vim`.
+- Keep a plugin's mappings and settings together in its own file.
 
 ## Example
-
-Here's a simple example of what a plugin configuration file might look like:
 
 ```vim
 " after/plugin/telescope.vim - Telescope configuration
@@ -40,5 +37,3 @@ require('telescope').setup {
 }
 EOF
 ```
-
-This directory is currently empty but ready for future expansion as you add plugins to your Neovim configuration.

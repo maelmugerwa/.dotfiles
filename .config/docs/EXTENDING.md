@@ -18,23 +18,40 @@ The ZSH configuration is split into modular files for better organization:
 ```
 .config/zsh/
 ├── aliases.zsh     # Command aliases and shortcuts
+├── amazon.zsh      # Amazon-host-only integrations (guarded)
 ├── completion.zsh  # Completion system configuration
 ├── core.zsh        # Core ZSH settings and options
-├── paths.zsh       # PATH and environment variables
+├── debug.zsh       # Startup tracing helper (set ZSH_DEBUG=1)
 ├── plugins.zsh     # Plugin loading mechanism
 ├── prompt.zsh      # Prompt configuration
 └── tools.zsh       # External tool integrations
 ```
 
+PATH and environment variables live in `~/.zshenv`, not in this directory.
+
+### Opt-in modules
+
+`.zshrc` sources every `*.zsh` file in `.config/zsh/`. A tracked file with no
+`.zsh` extension therefore ships to every machine but loads on none. That is
+the opt-in switch: rename it to turn it on, rename it back to turn it off.
+
+`ac3_zsh` uses this. Enable it only on a machine that needs AC3:
+
+```bash
+mv ~/.config/zsh/ac3_zsh ~/.config/zsh/ac3.zsh
+```
+
+Commit the extension-less name. A committed `.zsh` name would load everywhere.
+
 Each file serves a specific purpose and can be modified independently:
 
 - **core.zsh**: Fundamental ZSH settings (history, options, keybindings)
 - **completion.zsh**: Tab completion system
-- **prompt.zsh**: Shell prompt configuration (starship/spaceship)
+- **prompt.zsh**: Shell prompt configuration (starship)
 - **plugins.zsh**: ZSH plugin loading logic
 - **aliases.zsh**: Command shortcuts and aliases
-- **tools.zsh**: External tool integrations (zoxide, direnv, etc.)
-- **paths.zsh**: PATH and environment variable management
+- **tools.zsh**: External tool integrations (mise, zoxide, direnv)
+- **amazon.zsh**: Amazon-host integrations, guarded on /apollo/env or ~/.toolbox
 
 ### Modifying Existing Configuration
 
@@ -97,17 +114,17 @@ export MY_VARIABLE="my-value"
 
 The main `.zshrc` automatically loads all `.zsh` files from the `.config/zsh/` directory.
 
-### 3. Using .zshrc.local for Machine-Specific Settings
+### 3. Using local.zsh for Machine-Specific Settings
 
-For settings specific to a single machine, use `.zshrc.local`:
+Put single-machine settings in `~/.config/zsh/local.zsh`:
 
 ```bash
-# Add to ~/.zshrc.local
 alias local-alias='command-that-only-works-on-this-machine'
 export LOCAL_VARIABLE="local-value"
 ```
 
-This file is loaded by `.zshrc` but not tracked by yadm.
+`.zshrc` sources this file. yadm ignores it. `.zshenv` recreates it from
+`local.zsh.example` when it is missing. Put tokens in `secrets.zsh` instead.
 
 ## Creating and Adding Scripts
 
@@ -213,12 +230,12 @@ When yadm clones your repository on a system, it will use the appropriate versio
 ### 2. Example: OS-Specific ZSH Configuration
 
 ```bash
-# ~/.zshrc.local##os.Linux
+# ~/.config/zsh/local.zsh##os.Linux
 # Linux-specific settings
 alias ls='ls --color=auto'
 export LINUX_VAR="linux-value"
 
-# ~/.zshrc.local##os.Darwin
+# ~/.config/zsh/local.zsh##os.Darwin
 # macOS-specific settings
 alias ls='ls -G'
 export MACOS_VAR="macos-value"
@@ -291,6 +308,25 @@ yadm commit -m "Add new package to Brewfile"
 yadm push
 ```
 
+## Changing Language Versions
+
+mise owns node, python and go. Global versions live in the tracked
+`~/.config/mise/config.toml`:
+
+```toml
+[tools]
+node = "22"
+python = ["3.12", "3.11", "3.10", "3.9"]
+```
+
+Apply a change with `mise install`. Pin one directory with
+`mise use node@18.20.2`, which writes a local `mise.toml`.
+
+Amazon's `axe init builder-tools` also writes the global file. `bootstrap`
+warns you when it drifts from the tracked version.
+
+Rust is the exception: rustup owns it, and `~/.zshenv` sources `~/.cargo/env`.
+
 ---
 
-By following these guidelines, you can extend your dotfiles configuration in an organized and maintainable way. Remember to commit changes regularly and push to your remote repository to keep all your systems in sync.
+Commit and push after each change so every machine stays in sync.

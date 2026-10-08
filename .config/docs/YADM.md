@@ -1,6 +1,6 @@
 # YADM Management Guide
 
-This document covers advanced management tasks for yadm (Yet Another Dotfiles Manager), including setup, troubleshooting, and testing procedures.
+This document covers yadm (Yet Another Dotfiles Manager) setup, testing and troubleshooting.
 
 ## Table of Contents
 - [Structure Overview](#structure-overview)
@@ -12,18 +12,21 @@ This document covers advanced management tasks for yadm (Yet Another Dotfiles Ma
 
 ## Structure Overview
 
-The dotfiles are organized following the XDG Base Directory Specification:
+The dotfiles follow the XDG Base Directory Specification:
 
 ```
 $HOME/
 ├── .zshrc                # Main ZSH configuration entry point
+├── .zshenv               # PATH and environment variables (loads first)
 └── .config/              # XDG-compliant configuration directory
     ├── docs/             # Documentation
+    ├── git/              # Git config (config, ignore)
+    ├── mise/             # Language runtime versions (config.toml)
     ├── homebrew/         # Homebrew bundle files
-    │   └── Brewfile      # Used by 'brew bundle --global'
+    │   └── Brewfile      # Used by: brew bundle --file=~/.config/homebrew/Brewfile
     ├── yadm/             # YADM configuration
     │   ├── bootstrap     # Main bootstrap script executed by 'yadm bootstrap'
-    │   └── setup-repo.sh # Helper to set up GitHub repository
+    │   └── encrypt       # Patterns for 'yadm encrypt' (inert unless you run it)
     └── zsh/              # ZSH modular configuration
         ├── aliases.zsh   # Command aliases and shortcuts
         ├── completion.zsh # Completion system
@@ -33,7 +36,7 @@ $HOME/
 
 ## Initial Setup
 
-The initial setup is handled by `install.sh`, which provides an interactive menu with several options:
+`install.sh` runs the setup. It shows a menu with three options:
 
 1. **Install dotfiles** (standard installation):
    - Installs Homebrew on both macOS and Linux

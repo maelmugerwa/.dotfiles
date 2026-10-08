@@ -1,0 +1,7 @@
+# Global runtime versions. This file is tracked, so every machine converges here.
+# Python 3.8 is absent on purpose. It is end-of-life. mise cannot verify its
+# GitHub artifact attestations, and that failure aborts the whole `mise install`.
+[tools]
+go = "1.27"
+node = "22"
+python = ["3.12", "3.11", "3.10", "3.9"]

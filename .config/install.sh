@@ -1,50 +1,36 @@
 #!/usr/bin/env bash
 
-# install.sh - Interactive dotfiles installation script
-# 
-# This script provides an interactive menu to manage dotfiles:
-# - Install: Complete setup of dotfiles and development tools
-#   * Installs Homebrew package manager (macOS & Linux)
-#   * Installs yadm (Yet Another Dotfiles Manager) using Homebrew
-#   * Backs up existing dotfiles to prevent conflicts
-#   * Clones the dotfiles repository into the appropriate locations
-#   * Runs the bootstrap script for additional setup
-# - Cleanup: Remove previous installations
-#   * Uninstall yadm via Homebrew
-#   * Remove yadm repository data and configuration
-# - Restore: Restore from previous backups
-#   * List and select available backups
-#   * Clean up before restoration to prevent conflicts
-#   * Restore selected files to their original locations
+# install.sh - interactive menu to install, clean up or restore these dotfiles.
+#
+# Install: installs Homebrew, installs yadm, backs up existing dotfiles,
+# clones the repository, then runs the bootstrap script.
+# Cleanup: uninstalls yadm and removes its repository data and config.
+# Restore: lists backups, cleans up to avoid conflicts, restores your choice.
 #
 # Usage:
 #   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)"  # Interactive menu mode (recommended)
 #   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)" -- --non-interactive  # Skip the menu, perform standard install
 #
-# Note: The old method of installation (piping curl directly to bash) does not work properly with interactive mode:
-#   curl -fsSL ... | bash  # AVOID using this method as it breaks interactive input
+# Do NOT pipe curl straight to bash. `curl -fsSL ... | bash` leaves stdin at
+# EOF, so every interactive prompt reads nothing.
 #
 # Prerequisites:
-# - Git (will be installed by bootstrap script if missing)
-# - Curl (used to download this script)
-# - Sudo privileges (for installing packages)
+# - Git (bootstrap installs it if missing)
+# - Curl (downloads this script)
+# - Sudo rights (package installs need them)
 #
-# The dotfiles include configurations for:
-# - ZSH (shell setup, prompt, plugins, etc.)
-# - Git (aliases, defaults, useful commands)
-# - Modern CLI tools (bat, ripgrep, fd, etc.)
-# - Development environment preferences
+# The dotfiles configure zsh, git, modern CLI tools (bat, ripgrep, fd) and
+# language runtimes through mise (node, python, go).
 
 set -e
 
-# Colors for better output
+# Output colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Helper functions
 log_info() {
   echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -61,24 +47,19 @@ log_error() {
   echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Detect operating system
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
-# GitHub repository URL
 REPO_URL="https://github.com/maelmugerwa/.dotfiles.git"
 
-# Install Homebrew for macOS or Linux
 install_homebrew() {
   if ! command -v brew &> /dev/null; then
     log_info "Installing Homebrew..."
-    
-    # Use the official Homebrew installation script
+
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-    # Add Homebrew to path based on OS and architecture
+
+    # Add Homebrew to PATH for this OS and architecture
     if [[ "$OS" == "Darwin" ]]; then
-      # macOS - handle different architectures
       if [[ "$(uname -m)" == "arm64" ]]; then
         # M1/M2 Mac
         eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -101,12 +82,11 @@ install_homebrew() {
   fi
 }
 
-# Install yadm using Homebrew
 install_yadm() {
   if ! command -v yadm &> /dev/null; then
     log_info "Installing yadm using Homebrew..."
     
-    # Ensure Homebrew is available in this shell session
+    # The fresh Homebrew install is not on PATH yet in this shell.
     if [[ "$OS" == "Darwin" ]]; then
       if [[ "$(uname -m)" == "arm64" ]]; then
         # M1/M2 Mac
@@ -124,7 +104,6 @@ install_yadm() {
       fi
     fi
     
-    # Install yadm with Homebrew
     brew install yadm
     
     log_success "yadm installed successfully!"
@@ -133,14 +112,11 @@ install_yadm() {
   fi
 }
 
-# Clean up previous installations
 cleanup() {
   log_info "Cleaning up previous installations..."
-  
-  # Remove all files tracked by yadm if it's installed
+
   if command -v yadm &> /dev/null; then
     log_info "Removing files tracked by yadm..."
-    # First try to get a list of tracked files and remove them
     yadm list -a 2>/dev/null | while read -r file; do
       local full_path="$HOME/$file"
       if [[ -f "$full_path" || -d "$full_path" ]]; then
@@ -153,7 +129,6 @@ cleanup() {
     brew uninstall yadm 2>/dev/null || true
   fi
   
-  # Remove yadm repository data
   if [[ -d "$HOME/.local/share/yadm" ]]; then
     log_info "Removing yadm repository data..."
     rm -rf "$HOME/.local/share/yadm" 2>/dev/null || true
@@ -163,9 +138,7 @@ cleanup() {
   log_success "Cleanup completed!"
 }
 
-# Restore from backup
 restore_from_backup() {
-  # Find backup directories
   backup_dirs=($(find "$HOME" -maxdepth 1 -type d -name "dotfiles_backup_*" | sort -r))
   
   if [[ ${#backup_dirs[@]} -eq 0 ]]; then
@@ -175,10 +148,12 @@ restore_from_backup() {
   
   echo "Available backups:"
   for i in "${!backup_dirs[@]}"; do
-    echo "  $((i+1))) ${backup_dirs[$i]} ($(date -r "${backup_dirs[$i]}" "+%Y-%m-%d %H:%M:%S"))"
+    # Print the directory name, which already carries the timestamp.
+    # Do NOT use `date -r`: GNU reads a reference file, BSD reads epoch
+    # seconds, so it breaks on macOS.
+    echo "  $((i+1))) ${backup_dirs[$i]}"
   done
   
-  # Check if the script is running with stdin connected to a terminal
   if [ -t 0 ]; then
     read -p "Select a backup to restore [1-${#backup_dirs[@]}]: " backup_choice
     
@@ -187,7 +162,6 @@ restore_from_backup() {
       return 1
     fi
   else
-    # If stdin is not a terminal, default to the most recent backup
     log_warn "Interactive input not available (stdin is not a terminal)."
     log_warn "Defaulting to the most recent backup (option 1)."
     backup_choice=1
@@ -196,22 +170,18 @@ restore_from_backup() {
   
   selected_backup="${backup_dirs[$((backup_choice-1))]}"
   
-  # Clean up before restoration to prevent conflicts
   log_info "Cleaning up before restoration to prevent conflicts..."
   cleanup
   
   log_info "Restoring from $selected_backup..."
   
-  for file in "$selected_backup"/*; do
-    fname=$(basename "$file")
-    log_info "Restoring $fname to $HOME/$fname"
-    cp -r "$file" "$HOME/$fname"
-  done
+  # Copy the tree as-is so nested paths land back under .config, not in $HOME.
+  log_info "Restoring files to $HOME"
+  cp -a "$selected_backup/." "$HOME/"
   
   log_success "Restoration completed!"
 }
 
-# Interactive menu system
 interactive_menu() {
   clear
   echo "========================================"
@@ -226,12 +196,10 @@ interactive_menu() {
   echo "4) Exit"
   echo ""
   
-  # Check if the script is running with stdin connected to a terminal
-  # This prevents hanging when the script is piped to bash without process substitution
+  # Guard the prompt: a piped script has no terminal and would hang here.
   if [ -t 0 ]; then
     read -p "Enter your choice [1-4]: " choice
   else
-    # If stdin is not a terminal, default to non-interactive installation
     log_warn "Interactive input not available (stdin is not a terminal)."
     log_warn "Defaulting to standard installation (option 1)."
     log_warn "For interactive mode, use: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/maelmugerwa/.dotfiles/main/.config/install.sh)\""
@@ -279,17 +247,12 @@ interactive_menu() {
   esac
 }
 
-# Standard installation process
 install_dotfiles() {
-  # Install Homebrew
   install_homebrew
-  
-  # Install yadm using Homebrew
   install_yadm
-  
-  # Clone dotfiles
   clone_dotfiles
-  
+
+
   echo ""
   echo "========================================"
   log_success "Installation complete!"
@@ -298,34 +261,41 @@ install_dotfiles() {
   echo "========================================"
 }
 
-# Clone dotfiles repository and set up environment
 clone_dotfiles() {
   log_info "Cloning dotfiles repository..."
-  
-  # Check if there are any conflicting dotfiles
-  if [[ -f "$HOME/.zshrc" || -f "$HOME/.gitconfig" ]]; then
+
+  if [[ -f "$HOME/.zshrc" || -f "$HOME/.zshenv" || -f "$HOME/.gitconfig" \
+     || -d "$HOME/.config/git" || -d "$HOME/.config/zsh" ]]; then
     log_warn "Existing dotfiles detected. They will be backed up."
-    
+
     backup_dir="$HOME/dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
     mkdir -p "$backup_dir"
-    
-    for file in .zshrc .gitconfig .bashrc .vimrc .config/starship.toml; do
+
+    # yadm clone leaves a pre-existing file alone, so back up every path this
+    # repo tracks. Keep the relative path: a flat copy restores .config/git
+    # to ~/git. axe and mwinit collide on .ssh/config and .config/mise.
+    for file in .zshrc .zshenv .gitconfig .bashrc .vimrc .ssh/config \
+                .config/starship.toml .config/git .config/zsh \
+                .config/homebrew .config/mise; do
       if [[ -f "$HOME/$file" || -d "$HOME/$file" ]]; then
-        log_info "Backing up $file to $backup_dir/"
-        cp -r "$HOME/$file" "$backup_dir/" 2>/dev/null || true
+        log_info "Backing up $file to $backup_dir/$file"
+        mkdir -p "$backup_dir/$(dirname "$file")"
+        cp -r "$HOME/$file" "$backup_dir/$file" 2>/dev/null || true
       fi
     done
   fi
   
-  # Clone the repository and let YADM handle bootstrap automatically
-  log_info "Cloning repository and responding to bootstrap prompt..."
-  # Answer 'y' to bootstrap prompt
-  yadm clone "$REPO_URL"
+  # --bootstrap removes the "run bootstrap?" question. A bare `yadm clone`
+  # hangs an unattended install on a tty. Under `curl | bash` the prompt
+  # reads EOF and yadm SKIPS bootstrap, so the script claims success with no
+  # packages, no runtimes and no SSH keys.
+  log_info "Cloning repository and running bootstrap..."
+  yadm clone --bootstrap "$REPO_URL"
   
   log_success "Dotfiles installed successfully!"
 }
 
-# Note: After installation, use the following commands to manage your dotfiles:
+# Manage your dotfiles after installation with these commands:
 # - yadm status                 # Check for changes
 # - yadm add [file]             # Track a file
 # - yadm commit -m "message"    # Commit changes
@@ -333,10 +303,8 @@ clone_dotfiles() {
 # - yadm pull                   # Get the latest updates
 
 main() {
-  # Check if stdin is connected to a terminal
+  # No terminal and no --non-interactive flag means someone ran `curl | bash`.
   if ! [ -t 0 ] && [ "$1" != "--non-interactive" ]; then
-    # If stdin is not a terminal and not in non-interactive mode,
-    # this is likely being run with: curl ... | bash
     echo ""
     log_warn "Interactive input may not work correctly when piping to bash."
     log_warn "For proper interactive mode, use:"
@@ -346,15 +314,12 @@ main() {
     sleep 3
   fi
 
-  # Check if non-interactive mode requested
   if [[ "$1" == "--non-interactive" ]]; then
     install_dotfiles
     return
   fi
-  
-  # Otherwise show the interactive menu
+
   interactive_menu
 }
 
-# Run the main function
 main

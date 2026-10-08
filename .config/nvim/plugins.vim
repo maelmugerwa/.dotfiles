@@ -1,21 +1,14 @@
-" plugins.vim - Plugin management
-" This file is for managing Neovim plugins
-" Currently empty but can be used with plugin managers like vim-plug, packer.nvim, or lazy.nvim
+" plugins.vim - Plugin manager setup. Nothing is active yet.
 
-" Example for vim-plug:
-
-" Uncomment the following lines and add your plugins
+" Option 1: vim-plug.
 
 " call plug#begin('~/.config/nvim/plugged')
-
-" Plugins go here
 " Plug 'tpope/vim-surround'
 " Plug 'nvim-telescope/telescope.nvim'
 " Plug 'neovim/nvim-lspconfig'
-
 " call plug#end()
 
-" Example for Packer.nvim:
+" Option 2: packer.nvim.
 
 " lua << EOF
 " require('packer').startup(function(use)
@@ -31,8 +24,8 @@
 " end)
 " EOF
 
-" To enable one of these systems:
-" 1. Uncomment the appropriate section
-" 2. Install the plugin manager
-" 3. Source this file from init.vim with: `source $HOME/.config/nvim/plugins.vim`
-" 4. Run the appropriate plugin install command (:PlugInstall, :PackerInstall, etc.)
+" To enable one option:
+" 1. Uncomment that section.
+" 2. Install the plugin manager.
+" 3. Add `source $HOME/.config/nvim/plugins.vim` to init.vim.
+" 4. Run its install command, such as :PlugInstall or :PackerInstall.

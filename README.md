@@ -16,7 +16,7 @@ Non-interactive mode:
 
 ## Management Features
 
-The installation script provides an interactive menu with options to:
+`install.sh` shows a menu with three options:
 
 1. **Install dotfiles** (standard installation)
    - Install Homebrew (macOS & Linux)
@@ -51,23 +51,24 @@ The installation script provides an interactive menu with options to:
 - [YADM Guide](.config/docs/YADM.md)
 
 ## TODO
-- Delete repo_setup script; it is not needed on new machines
 - Optional: move debug.zsh to its own folder so custom loaders do not auto-source it
 
 ## Troubleshooting
-On new WSL2 install had to 
+
+A new WSL2 install needs these steps:
 - Add zsh to approved shells `which zsh | sudo tee -a /etc/shells`
 - Change default shell `chsh -s "$(which zsh)"`
 - exit WSL and verify zsh
-- Install correct node version `fnm install 20 && fnm use 20 && fnm default 20`
+- Install the node version you need `mise use -g node@22`
 - Might need to update npm config if npm install fails `npm config set cache ~/.npm-cache --global && npm config set prefix ~/.npm-global --global`
 
 ## Upgrading
 
 `local.zsh` and `secrets.zsh` are machine-specific and gitignored. Your next
-shell recreates each from its `.example` template if it is missing. After a
-`yadm pull`, open a new shell (or re-run bootstrap), then re-add any real values
-to `secrets.zsh` (tokens, `AC3_RC_HOST`, corp cert vars).
+shell recreates each from its `.example` template if it is missing.
+
+After a `yadm pull`, open a new shell or re-run bootstrap. Then re-add your real
+values to `secrets.zsh`: tokens, `AC3_RC_HOST`, and corp cert variables.
 
 ## License
 

@@ -1,4 +1,7 @@
-# Machine-local secrets — never commit.
+# Machine-local secrets. Never commit.
 secrets.zsh
-# Machine-specific config — generated from local.zsh.example by the installer.
+# Machine-specific config. The installer generates it from local.zsh.example.
 local.zsh
+# A foreign .zshrc that bootstrap parks here on first install. The .disabled
+# suffix stops .zshrc's auto-source glob from running it.
+zshrc_backup.zsh*

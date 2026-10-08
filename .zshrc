@@ -1,12 +1,11 @@
-# .zshrc - Main ZSH configuration file
-# This file loads modular ZSH configuration from ~/.config/zsh
-# zsh auto-sources ~/.zshenv before ~/.zshrc, so no explicit source is needed here.
+# .zshrc - interactive shell configuration.
+# This file loads the modules in ~/.config/zsh.
+# zsh sources ~/.zshenv first, so no explicit source belongs here.
 
-# Define base directory for ZSH configuration
 ZDOTDIR=${ZDOTDIR:-$HOME}
 ZSH_CONFIG_DIR="$HOME/.config/zsh"
 
-# Load debug utility first if it exists (but only once)
+# Load the debug helper once, before any module.
 if [[ -f "$ZSH_CONFIG_DIR/debug.zsh" && -z "$ZSH_DEBUG_LOADED" ]]; then
   ZSH_DEBUG_LOADED=1
   source "$ZSH_CONFIG_DIR/debug.zsh"
@@ -14,8 +13,7 @@ if [[ -f "$ZSH_CONFIG_DIR/debug.zsh" && -z "$ZSH_DEBUG_LOADED" ]]; then
   zsh_debug "ZSH_CONFIG_DIR: $ZSH_CONFIG_DIR"
 fi
 
-# Load core ZSH configuration files
-# Order matters here - load in dependency order
+# Core modules. Load them in dependency order.
 zsh_config_files=(
   "core.zsh"      # Core ZSH settings and options
   "completion.zsh" # Completion system
@@ -26,7 +24,6 @@ zsh_config_files=(
   "local.zsh"     # Machine-specific configurations
 )
 
-# Source each config file if it exists
 for config_file in "${zsh_config_files[@]}"; do
   config_path="$ZSH_CONFIG_DIR/$config_file"
   if [[ -f "$config_path" ]]; then
@@ -41,8 +38,8 @@ for config_file in "${zsh_config_files[@]}"; do
   fi
 done
 
-# Load any extra .zsh files from ~/.config/zsh that aren't in the core list
-# This allows additional customization without modifying core files
+# Load every other .zsh module in the directory.
+# This keeps the core files untouched.
 for custom_file in "$ZSH_CONFIG_DIR"/*.zsh; do
   if [[ -f "$custom_file" ]]; then
     basename=${custom_file:t}
@@ -65,48 +62,19 @@ unset custom_file
 # ===================================================================
 # AUTO-ADDED CONTENT SECTION
 # ===================================================================
-# Tools may automatically append content below this line.
-# When you notice new content here, consider moving it to the
-# appropriate module file in ~/.config/zsh/ for better organization:
+# Delete everything below this line. Nothing here is needed.
 #
-# - For PATH additions:          → ~/.zshenv
-# - For aliases/functions:       → aliases.zsh
-# - For tool configurations:     → tools.zsh
-# - For completion settings:     → completion.zsh
-# - For core shell settings:     → core.zsh
-# - For prompt configurations:   → prompt.zsh
+# Tools append content below this line. Move each new entry to the module
+# that owns it:
 #
-# Or create a new .zsh file for tool-specific configurations
+# - PATH additions:          → ~/.zshenv
+# - Aliases and functions:   → aliases.zsh
+# - Tool configuration:      → tools.zsh
+# - Completion settings:     → completion.zsh
+# - Core shell settings:     → core.zsh
+# - Prompt configuration:    → prompt.zsh
+#
+# For a new tool, create a new .zsh file in ~/.config/zsh.
+# mise lives in tools.zsh. Amazon integrations live in amazon.zsh.
+# PATH and environment variables live in ~/.zshenv.
 # ===================================================================
-
-# Content below will be preserved during updates
-
-# if you wish to use IMDS set AWS_EC2_METADATA_DISABLED=false
-
-export AWS_EC2_METADATA_DISABLED=true
-
-autoload -Uz compinit && compinit
-
-# Set up mise for runtime management (only if installed)
-if [[ -x "$HOME/.local/bin/mise" ]]; then
-  eval "$("$HOME/.local/bin/mise" activate zsh)"
-  [[ -f "$HOME/.local/share/mise/completions.zsh" ]] && source "$HOME/.local/share/mise/completions.zsh"
-fi
-[[ -f "$HOME/.brazil_completion/zsh_completion" ]] && source "$HOME/.brazil_completion/zsh_completion"
-alias finch='sudo HOME=$HOME DOCKER_CONFIG=$HOME/.docker finch'
-
-# Added by AIM CLI
-export PATH="$HOME/.aim/mcp-servers:$PATH"
-
-# MeshClaw
-[[ -d "$HOME/MeshClaw/src/MeshClaw/bin" ]] && export PATH="$HOME/MeshClaw/src/MeshClaw/bin:$PATH"
-
-# Eda autocompletion (only if eda is installed)
-if command -v eda &> /dev/null; then
-  export EDA_AUTO="$HOME/.config/eda/completion"
-  mkdir -p "$EDA_AUTO"
-  eda completions zsh > "$EDA_AUTO/_eda" 2>/dev/null
-  fpath=("$EDA_AUTO" $fpath)
-fi
-
-[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"

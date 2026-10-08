@@ -54,13 +54,13 @@ zsh_plugin_debug() {
   fi
 }
 
-# Log keybinding information
+# Log keybinding information. No-op unless ZSH_DEBUG is set. The old version
+# wrote a temp file into $ZSH_DEBUG_DIR, which exists only when debugging is on,
+# so every normal shell printed a "no such file or directory" error.
 log_keybindings() {
-  local tmp_file="$ZSH_DEBUG_DIR/keybindings.tmp"
-  bindkey > "$tmp_file"
+  [[ -n "$ZSH_DEBUG" ]] || return 0
   zsh_debug "Current keybindings:"
-  while read -r line; do
+  bindkey | while read -r line; do
     zsh_debug "  $line"
-  done < "$tmp_file"
-  # rm "$tmp_file"
+  done
 }

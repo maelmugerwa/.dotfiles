@@ -1,5 +1,9 @@
-# Cloud-desktop-only module. No-op on other hosts (WSL, macOS, generic Linux).
-[[ -d /apollo/env ]] || return 0
+# Amazon-machine module. No-op on personal hosts (WSL, macOS, generic Linux).
+#
+# The guard matches amazon.zsh. An Amazon Mac has ~/.toolbox but no /apollo/env
+# until Brazil creates its first workspace. A bare /apollo/env test hides b, bb
+# and every eda alias there. Desktop-only lines carry their own inner guard.
+[[ -d /apollo/env || -d "$HOME/.toolbox" ]] || return 0
 
 export BRAZIL_WORKSPACE_DEFAULT_LAYOUT=short
 
@@ -25,41 +29,43 @@ alias register-with-aaa="/apollo/env/AAAWorkspaceSupport/bin/register_with_aaa.p
 # Toolbox
 export PATH=$HOME/.toolbox/bin:$PATH
 
-# Add envImprovement to PATH
-export PATH=$PATH:/apollo/env/envImprovement/bin
+# Cloud desktop only. An Amazon Mac has no envImprovement.
+[[ -d /apollo/env/envImprovement/bin ]] && export PATH=$PATH:/apollo/env/envImprovement/bin
 
-# Redfort/Odin cert material-set and local data proxy are per-host and internal.
 # Set CSC_UI_ODIN_MATERIAL_SET and CSC_UI_LOCAL_DATA_PROXY in
-# ~/.config/zsh/secrets.zsh (gitignored) -- never commit corp hostnames.
+# ~/.config/zsh/secrets.zsh (gitignored). The values are per-host and internal.
+# Never commit corp hostnames.
 
-# on context change (ex: on cd) call ls
+# Run ls after every cd.
 chpwd() ls -F
 
-# midway + kerberos auth
+# Midway and Kerberos auth.
 alias auth='mwinit -o -s'
 alias login='kinit -f && mwinit -o -s'
 
-# reload zhsrc
+# Reload .zshrc.
 reload() {
     source ~/.zshrc >/dev/null 2>&1
 }
 
-# Function to send Slack notification
+# Send a Slack build notification.
+# Set BUILD_SLACK_WEBHOOK in ~/.config/zsh/secrets.zsh (gitignored) to enable.
+# Without it this returns immediately. b() and brazil-build-wrapper() call it on
+# every build, so an unset webhook must never fire a curl.
 slack() {
+    [[ -n "${BUILD_SLACK_WEBHOOK:-}" ]] || return 0
+
     local pwd=$1
     local command=$2
     local exit_status=$3
     local duration=$4
     local hostname=$(hostname)
 
-    # Remove '/workplace/maelmug' from the pwd
     local short_pwd=${pwd#/workplace/$USER}
 
-    # Convert duration to minutes and seconds
     local minutes=$((duration / 60))
     local seconds=$((duration % 60))
 
-    # Construct the message based on exit status
     local content
     if [[ $exit_status -eq 0 ]]; then
         content="Success! :tada:"
@@ -67,32 +73,29 @@ slack() {
         content="Failed with code $exit_status! :fire:"
     fi
 
-    WEBHOOK="REDACTED_SLACK_WEBHOOK_URL" # Replace with your actual webhook URL when needed
-    curl -X POST "$WEBHOOK" \
+    curl -fsS --max-time 5 -X POST "$BUILD_SLACK_WEBHOOK" \
          -H "Content-Type: application/json" \
-         --data "{\"Message\":\"$content (${minutes}m ${seconds}s)\", \"pwd\": \"$short_pwd\", \"command\": \"$command\"}"
+         --data "{\"Message\":\"$content (${minutes}m ${seconds}s)\", \"pwd\": \"$short_pwd\", \"command\": \"$command\"}" \
+         > /dev/null 2>&1 || true
 }
 
-# Wrap brazil-build function
+# Wrap brazil-build to notify Slack.
 brazil-build-wrapper() {
     local start_time=$(date +%s)
     local pwd=$(pwd)
     local full_command="brazil-build $*"
 
-    # Call the original brazil-build function
     command brazil-build "$@"
     local exit_status=$?
 
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
-    # Send notification to Slack
     slack "$pwd" "$full_command" "$exit_status" "$duration"
 
     return $exit_status
 }
 
-# Set up alias to use the wrapper
 alias brazil-build='brazil-build-wrapper'
 
 # brazil aliases
@@ -120,20 +123,18 @@ alias crebase="eda rebase --current-package"
 alias cpush="eda push --current-package"
 alias cmerge="eda merge --current-package"
 
-# wrap eda build functions to send notifications
+# Wrap eda build to notify Slack.
 b() { # ex: b --silent release
     local start_time=$(date +%s)
     local pwd=$(pwd)
     local full_command="eda build"
     local silent=false
 
-    # Check for --silent argument
     if [[ "$1" == "--silent" ]]; then
         silent=true
-        shift  # Remove --silent from the arguments
+        shift
     fi
 
-    # Construct the command
     if $silent; then
         full_command+=" --silent"
         command eda build --silent brazil-build "$@"
@@ -146,7 +147,6 @@ b() { # ex: b --silent release
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
-    # Send notification to Slack
     slack "$pwd" "$full_command" "$exit_status" "$duration"
 
     return $exit_status
@@ -163,7 +163,7 @@ alias log="eda run git log --max-count=5 --color --graph --pretty=format:'%Cred%
 alias st="eda st"
 alias status="eda fetch && eda st"
 
-# is package in live?
+# Is a package in the live version set?
 inLive(){
     command='brazil pkg print -vs live -p '
     read "packageName?Which packageName? "; command+="${packageName}"
@@ -171,20 +171,20 @@ inLive(){
     echo "$command\n"; eval "$command"
 }
 
-# kill port
-killPort() { #$1 is first arg (here: port number)
+# Kill whatever listens on a port.
+killPort() { # $1 is the port number
     kill $(lsof -t -i:"${1}")
 }
 
-# cleanup clouddesk
+# Free disk space on a cloud desktop.
 clean() {
-    # install and use ncdu to find and delete large files
+    # Install ncdu to find large files:
     # sudo rpm -Uvh http://archives.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
     # sudo yum clean all
     # sudo yum makecache
     # sudo yum install -y ncdu
 
-    # free up space https://w.amazon.com/bin/view/AWS/IoT/Rules/Tutorials/cleanclouddesktopspace/
+    # Reference: https://w.amazon.com/bin/view/AWS/IoT/Rules/Tutorials/cleanclouddesktopspace/
     if read -qs "choice?Press Y/y to prune docker"; then
         sudo docker system prune -a -f
     fi; echo "\n"

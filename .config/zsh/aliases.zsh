@@ -1,9 +1,8 @@
-# aliases.zsh - Common command aliases and shortcuts
-# This file contains aliases for frequently used commands
+# aliases.zsh - aliases for frequently used commands
 
 # Modern CLI tool aliases
 if command -v eza &> /dev/null; then
-  # eza - Modern replacement for ls
+  # eza replaces ls.
   alias ls="eza --icons"                 # Basic listing with icons
   alias ll="eza -l --icons --git"        # Long listing with git status
   alias la="eza -la --icons --git"       # Show hidden files
@@ -12,30 +11,27 @@ if command -v eza &> /dev/null; then
 fi
 
 if command -v bat &> /dev/null; then
-  # bat - Modern replacement for cat
-  alias cat="bat --style=plain"          # Better syntax highlighting
+  # bat replaces cat.
+  alias cat="bat --style=plain"          # Syntax-highlighted output
   alias catp="bat --plain"               # No line numbers or decorations
   alias bathelp="bat --plain --language=help" # For command help pages
 fi
 
-if command -v fd &> /dev/null; then
-  # Use fd directly (don't alias find — breaks fzf, scripts, Makefiles that expect GNU find syntax)
-  # fd is already shorter than find, no alias needed
-  :
-fi
+# No find alias. An alias breaks fzf, scripts and Makefiles that expect GNU find syntax.
+# fd is already shorter than find.
 
 if command -v rg &> /dev/null; then
-  # ripgrep - Modern replacement for grep
-  # Wrapper that falls back to real grep on regex incompatibilities
+  # ripgrep replaces grep.
+  # The function falls back to real grep when rg rejects the regex.
   function grep {
     rg "$@" 2>/dev/null || command grep "$@"
   }
 fi
 
 if command -v nvim &> /dev/null; then
-  # Neovim - Modern Vim
-  alias vim="nvim"                       # Use Neovim instead of Vim
-  alias vi="nvim"                        # Use Neovim instead of Vi
+  # Neovim replaces Vim.
+  alias vim="nvim"
+  alias vi="nvim"
 fi
 
 # General navigation
@@ -58,14 +54,14 @@ alias du="du -h"                         # Human-readable sizes
 alias free="free -m"                     # Show sizes in MB
 
 # Git shortcuts
-alias g="git"                            # Short git command
-alias gs="git status"                    # Check git status
-alias gl="git log"                       # View git log
+alias g="git"
+alias gs="git status"
+alias gl="git log"
 
 # Terminal UI tools
 alias lg="lazygit"                       # Terminal UI for git
 alias ld="lazydocker"                    # Terminal UI for docker
-alias top="btop"                         # Better top command
+alias top="btop"                         # Richer replacement for top
 
 # JSON handling
 alias jqp="jq '.'"                       # Pretty-print JSON
@@ -73,20 +69,19 @@ alias jqs="jq -r 'keys'"                 # Show JSON keys
 alias jqv="jq -r '.[] | .'"              # Show JSON values
 
 # HTTP client
-alias GET="http GET"                     # HTTP GET request
-alias POST="http POST"                   # HTTP POST request
-alias HEAD="http HEAD"                   # HTTP HEAD request
-alias httpj="http --json"                # HTTP with JSON content-type
+alias GET="http GET"
+alias POST="http POST"
+alias HEAD="http HEAD"
+alias httpj="http --json"                # Send a JSON content type
 
 # Diff tool
-alias diff="difft"                       # Use difftastic for better diffs
+alias diff="difft"                       # difftastic shows structural diffs
 
 # Just - task runner
-alias j="just"                           # Run just command
-alias jl="just --list"                   # List available just recipes
+alias j="just"
+alias jl="just --list"
 
-# Add your custom aliases below this line
-# Example:
+# Add custom aliases below, for example:
 # alias mycommand="complex command with options"
 
 # MeshClaw

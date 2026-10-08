@@ -1,6 +1,6 @@
 # Dotfiles - Tools Reference
 
-This document provides detailed information about the tools included in these dotfiles.
+This document describes each tool the dotfiles install and configure.
 
 - [Package Management](#package-management)
 - [Shell Configuration](#shell-configuration)
@@ -13,11 +13,11 @@ This document provides detailed information about the tools included in these do
 
 ### Homebrew
 
-[Homebrew](https://brew.sh/) is the package manager used for both macOS and Linux. It allows for consistent package management across different platforms.
+[Homebrew](https://brew.sh/) is the package manager on macOS and Linux. One package list serves both platforms.
 
-- **Brewfile**: Located at `~/.config/homebrew/Brewfile`, it contains all packages to be installed during setup.
-- **Installation**: Automatically installed by the interactive `install.sh` script for both macOS and Linux platforms.
-- **Configuration**: Path is automatically set up based on platform (Intel/ARM macOS or Linux).
+- **Brewfile**: `~/.config/homebrew/Brewfile` lists every package that setup installs.
+- **Installation**: `install.sh` installs Homebrew on macOS and Linux.
+- **Configuration**: The dotfiles set the Homebrew path per platform (Intel macOS, ARM macOS, or Linux).
 - **Usage**: 
   ```bash
   brew install <package>     # Install a package
@@ -29,136 +29,134 @@ This document provides detailed information about the tools included in these do
 
 ### Zsh
 
-[Zsh](https://www.zsh.org/) is configured with a modular approach:
+[Zsh](https://www.zsh.org/) config is modular. One file per concern:
 
-- **Core config**: Located in `.config/zsh/core.zsh` (history, options, keybindings)
-- **Completion**: Located in `.config/zsh/completion.zsh` (tab completion system)
-- **Prompt**: Located in `.config/zsh/prompt.zsh` (shell prompt settings)
-- **Plugins**: Located in `.config/zsh/plugins.zsh` (plugin loading)
-- **Aliases**: Located in `.config/zsh/aliases.zsh` (command shortcuts)
-- **Tools**: Located in `.config/zsh/tools.zsh` (external tool integration)
-- **Paths**: Located in `.config/zsh/paths.zsh` (PATH and env variables)
+- **Core config**: `.config/zsh/core.zsh` (history, options, keybindings)
+- **Completion**: `.config/zsh/completion.zsh` (tab completion system)
+- **Prompt**: `.config/zsh/prompt.zsh` (shell prompt settings)
+- **Plugins**: `.config/zsh/plugins.zsh` (plugin loading)
+- **Aliases**: `.config/zsh/aliases.zsh` (command shortcuts)
+- **Tools**: `.config/zsh/tools.zsh` (external tool integration)
+- **Paths**: `~/.zshenv` (PATH and environment variables)
+- **Amazon**: `.config/zsh/amazon.zsh` (Amazon-host-only integrations)
 
 ### Starship Prompt
 
-[Starship](https://starship.rs/) is a minimal, fast, and customizable prompt for any shell:
+[Starship](https://starship.rs/) draws the shell prompt. It runs on any shell.
 
-- **Config**: Located at `.config/starship.toml`
-- **Features**: Git status, Python/Node.js version, command duration, etc.
-- **Benefits**: Works across different shells, minimal configuration
+- **Config**: `.config/starship.toml`
+- **Features**: Git status, Python and Node.js version, command duration
 
 ### Plugins
 
-The following Zsh plugins are automatically loaded if available:
+Zsh loads these plugins when they are present:
 
-- **[zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)**: Fish-like command suggestions based on history
-- **[zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)**: Syntax highlighting for commands as you type
+- **[zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)**: Suggests commands from your history as you type
+- **[zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting)**: Colors commands as you type
 
 ## Modern CLI Tools
 
 ### bat
 
-[bat](https://github.com/sharkdp/bat) is a `cat` clone with syntax highlighting and Git integration:
+[bat](https://github.com/sharkdp/bat) replaces `cat`. It highlights syntax and reads Git state.
 
-- **Usage**: `bat file.txt` (aliased to `cat`)
-- **Features**: Syntax highlighting, line numbers, Git status integration
-- **Options**: `--plain` for simple output without decorations
+- **Usage**: `bat file.txt`. `cat` is aliased to `bat --style=plain`.
+- **Features**: Syntax highlighting, line numbers, Git status column
+- **Options**: `--plain` drops all decorations
 
 ### eza
 
-[eza](https://github.com/eza-community/eza) is a modern replacement for `ls`:
+[eza](https://github.com/eza-community/eza) replaces `ls`. It adds icons and Git state.
 
-- **Usage**: `eza` (aliased to `ls`), `ll`, `la`, `lt`
+- **Usage**: `ls`, `ll`, `la`, `lt`, `lg` all map to `eza`
 - **Features**: Icons, Git integration, color coding
-- **Options**: Various aliases for different listing formats
+- **Aliases**: `ls` (icons), `ll` (long plus Git), `la` (long plus hidden), `lt` (tree), `lg` (respects `.gitignore`)
 
 ### fd
 
-[fd](https://github.com/sharkdp/fd) is a simple, fast alternative to `find`:
+[fd](https://github.com/sharkdp/fd) is a fast alternative to `find`.
 
-- **Usage**: `fd pattern` (aliased to `find`)
-- **Features**: Intuitive syntax, respects `.gitignore`, colorized output
-- **Benefits**: Much simpler syntax than traditional `find`
+- **Usage**: `fd pattern`. There is no alias. An alias on `find` breaks fzf, scripts and Makefiles that expect GNU `find` syntax.
+- **Features**: Short syntax, respects `.gitignore`, colorized output
 
 ### ripgrep (rg)
 
-[ripgrep](https://github.com/BurntSushi/ripgrep) is a faster alternative to grep:
+[ripgrep](https://github.com/BurntSushi/ripgrep) searches file contents faster than `grep`.
 
-- **Usage**: `rg pattern` (aliased to `grep`)
+- **Usage**: `rg pattern`. A `grep` shell function runs `rg` first and falls back to the real `grep` if `rg` fails.
 - **Features**: Fast search, respects `.gitignore`, shows context
-- **Benefits**: Much faster than traditional grep, prettier output
 
 ### zoxide
 
-[zoxide](https://github.com/ajeetdsouza/zoxide) is a smarter cd command:
+[zoxide](https://github.com/ajeetdsouza/zoxide) replaces `cd` with a ranked jump.
 
 - **Usage**: `z directory-name`
-- **Features**: Remembers directories you visit, allows fuzzy matching
-- **Benefits**: Much faster navigation between commonly used directories
+- **Features**: Remembers directories you visit and matches them fuzzily
 
 ## Development Tools
 
-### fnm (Fast Node Manager)
+### mise
 
-[fnm](https://github.com/Schniz/fnm) is a fast and simple Node.js version manager:
+[mise](https://mise.jdx.dev) manages Node, Python and Go versions. It replaces
+fnm, pyenv and asdf, so there is one tool and one config file to learn.
 
-- **Usage**: `fnm use 16` or `fnm use`
-- **Features**: Automatically switches Node.js versions based on `.nvmrc` files
-- **Benefits**: Much faster than nvm, works with various shells
+Global versions live in the tracked `~/.config/mise/config.toml`. Every machine
+converges on that file when `bootstrap` runs `mise install`.
 
-### pyenv
+- **Set the global default**: `mise use -g node@22`
+- **Pin one directory**: `mise use node@18.20.2` (writes `./mise.toml`)
+- **Run once without pinning**: `mise x node@18 -- npm ci`
+- **List installed**: `mise ls`
+- **List available**: `mise ls-remote node`
 
-[pyenv](https://github.com/pyenv/pyenv) is a Python version manager:
+mise activates in `tools.zsh` and auto-switches when you cd into a directory
+holding a `mise.toml` or `.tool-versions` file.
 
-- **Usage**: `pyenv install 3.10.0`, `pyenv global 3.10.0`
-- **Features**: Manage multiple Python versions
-- **Benefits**: Isolate Python environments per project
+Rust is the exception: rustup owns it, and `~/.zshenv` sources `~/.cargo/env`.
 
 ### Git
 
-Git is extensively configured with useful aliases and settings:
+The dotfiles ship a shared Git config, so every machine behaves the same.
 
 - **Aliases**: See [ALIASES.md](ALIASES.md) for Git aliases
-- **Configuration**: Located in `.gitconfig`
-- **Benefits**: Consistent Git workflow across machines
+- **Configuration**: `.config/git/config`, with ignore rules in `.config/git/ignore`
+- **Identity**: the untracked `~/.gitconfig` holds name and email, and wins on duplicate keys
 
 ### Neovim
 
-[Neovim](https://neovim.io/) is a modern, improved version of Vim:
+[Neovim](https://neovim.io/) is a Vim fork with better defaults and async plugins.
 
-- **Config**: Configuration may be located in `.config/nvim/`
-- **Benefits**: Better defaults, improved plugin system, async operations
+- **Config**: `.config/nvim/`
 
 ## Terminal Productivity
 
 ### fzf (Fuzzy Finder)
 
-[fzf](https://github.com/junegunn/fzf) is a general-purpose command-line fuzzy finder:
+[fzf](https://github.com/junegunn/fzf) filters any list interactively.
 
-- **Usage**: `Ctrl+R` for history search, `**` tab completion, etc.
-- **Features**: Fast fuzzy search for files, history, processes, etc.
-- **Benefits**: Makes finding things in the terminal much faster
+- **Usage**: `**` then Tab for path completion. See the FZF aliases in [ALIASES.md](ALIASES.md).
+- **Features**: Fuzzy search over files, processes and any piped list
+- **Note**: fzf does not own `Ctrl+R` here. `tools.zsh` keeps that binding for mcfly.
 
-### atuin
+### mcfly
 
-[atuin](https://github.com/atuinsh/atuin) is a magical shell history tool:
+[mcfly](https://github.com/cantino/mcfly) replaces the default history search. `tools.zsh` initializes it and gives it `Ctrl+R`.
 
-- **Usage**: `Ctrl+R` (replaces default history search)
-- **Features**: Searchable shell history with context, syncing between machines
-- **Benefits**: Never lose command history, search by context
+- **Usage**: `Ctrl+R`
+- **Features**: Ranks history by context, fuzzy matching, vim keys
+- **Settings**: `tools.zsh` exports `MCFLY_KEY_SCHEME`, `MCFLY_FUZZY`, `MCFLY_RESULTS`, `MCFLY_HISTORY_LIMIT` and `MCFLY_INTERFACE_VIEW`
+- **Note**: The Brewfile keeps `atuin` commented out. mcfly covers shell history.
 
 ### lazygit
 
-[lazygit](https://github.com/jesseduffield/lazygit) is a terminal UI for git commands:
+[lazygit](https://github.com/jesseduffield/lazygit) is a terminal UI for Git.
 
-- **Usage**: `lazygit`
-- **Features**: Visual interface for common Git operations
-- **Benefits**: Simplifies complex Git operations
+- **Usage**: `lazygit`, or the `lg` alias
+- **Features**: Stage, commit, branch and rebase from one screen
 
 ### lazydocker
 
-[lazydocker](https://github.com/jesseduffield/lazydocker) is a terminal UI for docker:
+[lazydocker](https://github.com/jesseduffield/lazydocker) is a terminal UI for Docker.
 
-- **Usage**: `lazydocker`
-- **Features**: Visual interface for Docker containers, images, etc.
-- **Benefits**: Simplifies managing Docker resources
+- **Usage**: `lazydocker`, or the `ld` alias
+- **Features**: Browse containers, images and logs from one screen

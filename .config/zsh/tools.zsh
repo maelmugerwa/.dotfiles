@@ -1,39 +1,36 @@
-# tools.zsh - External tool integrations
-# This file handles setup and configuration of external tools
+# tools.zsh - external tool integrations.
 
-# Initialize zoxide (smarter cd command)
+# zoxide: smarter cd.
 if command -v zoxide &> /dev/null; then
   eval "$(zoxide init zsh)"
 fi
 
-# Initialize thefuck (command correction)
+# thefuck: command correction.
 if command -v thefuck &> /dev/null; then
   eval "$(thefuck --alias)"
 fi
 
-# Initialize direnv (directory-specific environment variables)
+# direnv: per-directory environment variables.
 if command -v direnv &> /dev/null; then
   eval "$(direnv hook zsh)"
 fi
 
-# Initialize mcfly (smarter history search)
+# mcfly: smarter history search.
 if command -v mcfly &> /dev/null; then
-  # Set up mcfly before other tools to ensure it gets priority for keybindings
-  export MCFLY_KEY_SCHEME=vim      # Use vim-style key bindings
-  export MCFLY_FUZZY=true          # Enable fuzzy matching
-  export MCFLY_RESULTS=20          # Show 20 results max
-  export MCFLY_HISTORY_LIMIT=5000  # Remember this many commands
-  export MCFLY_INTERFACE_VIEW=BOTTOM # Display at bottom of screen
-  export MCFLY_DISABLE_MENU=false  # Keep the selection menu
+  # Configure mcfly before the other tools so it wins the keybindings.
+  export MCFLY_KEY_SCHEME=vim      # vim-style key bindings
+  export MCFLY_FUZZY=true          # fuzzy matching
+  export MCFLY_RESULTS=20          # show 20 results at most
+  export MCFLY_HISTORY_LIMIT=5000  # remember this many commands
+  export MCFLY_INTERFACE_VIEW=BOTTOM # show the menu at the bottom
+  export MCFLY_DISABLE_MENU=false  # keep the selection menu
 
-  # Initialize mcfly
   eval "$(mcfly init zsh)"
 fi
 
-# FZF utilities (file finding, but not history search - using mcfly instead)
+# fzf for file finding. mcfly owns history search.
 if command -v fzf &> /dev/null; then
-  # Useful fzf shortcuts and helpers (but not history - that's handled by mcfly)
-  # These use `fd` (respects FZF_EXCLUDES set in fzf-cd.zsh) instead of raw `find`
+  # These aliases use `fd`, which respects FZF_EXCLUDES from fzf-cd.zsh.
   alias fcd='cd $(fd --type d --hidden --follow | fzf)'      # Interactive cd
   alias fopen='xdg-open $(fd --type f --hidden --follow | fzf)'  # Open file with default app
   alias ff='fd --type f --hidden --follow | fzf'             # Find files
@@ -53,34 +50,12 @@ if command -v fzf &> /dev/null; then
   fi
 fi
 
-# Initialize fnm (Fast Node Manager)
-if command -v fnm &> /dev/null; then
-  eval "$(fnm env --use-on-cd)"
-fi
-
-# Initialize pyenv (Python version manager)
-if command -v pyenv &> /dev/null; then
-  eval "$(pyenv init -)"
-  
-  # Add virtualenv support if pyenv-virtualenv is installed
-  if command -v pyenv-virtualenv-init &> /dev/null || [[ -d "$(pyenv root)/plugins/pyenv-virtualenv" ]]; then
-    eval "$(pyenv virtualenv-init -)"
-  fi
-fi
-
-# Initialize asdf (version manager)
-if [[ -f /usr/local/opt/asdf/libexec/asdf.sh ]]; then
-  source /usr/local/opt/asdf/libexec/asdf.sh
-  # Add completions if available
-  if [[ -f /usr/local/opt/asdf/etc/bash_completion.d/asdf.bash ]]; then
-    source /usr/local/opt/asdf/etc/bash_completion.d/asdf.bash
-  fi
-elif [[ -f $HOME/.asdf/asdf.sh ]]; then
-  source $HOME/.asdf/asdf.sh
-  # Add completions if available
-  if [[ -f $HOME/.asdf/completions/asdf.bash ]]; then
-    source $HOME/.asdf/completions/asdf.bash
-  fi
+# Initialize mise (single manager for node, python and go; rust is rustup's).
+# Guarded on the command, not a path: brew installs it to different prefixes on
+# macOS and Linux. Versions come from ~/.config/mise/config.toml.
+if command -v mise &> /dev/null; then
+  eval "$(mise activate zsh)"
+  [[ -f "$HOME/.local/share/mise/completions.zsh" ]] && source "$HOME/.local/share/mise/completions.zsh"
 fi
 
 # Add other tool initializations below this line

@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-# yadm bootstrap script
-# This script runs once after yadm clone or yadm bootstrap
-# It sets up a complete development environment
+# yadm bootstrap: set up a complete development environment.
+# yadm runs this once after `yadm clone` or `yadm bootstrap`.
 
-set -e # Exit immediately if a command exits with a non-zero status
-set -u # Exit if an unset variable is used
+set -e # Stop on any command failure
+set -u # Stop on an unset variable
 set -o pipefail
 
-# Colors for better output
+# Output colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -42,13 +41,12 @@ copy_to_clipboard() {
   fi
 }
 
-# Detect operating system
 OS="$(uname -s)"
 log_info "Detected OS: $OS"
 
-# Ensure the en_US.UTF-8 locale exists. Fresh Ubuntu/WSL lack it, which causes
-# "setlocale: cannot change locale" warnings. .zshenv falls back to C.UTF-8,
-# but generate the real locale where we can.
+# Generate the en_US.UTF-8 locale when the system lacks it.
+# Fresh Ubuntu and WSL lack it, so zsh warns "setlocale: cannot change locale".
+# .zshenv falls back to C.UTF-8 where this script cannot generate the locale.
 if [[ "$OS" == "Linux" ]] && ! locale -a 2>/dev/null | grep -qi '^en_US\.utf8$'; then
   if command -v apt-get &> /dev/null; then
     log_info "Generating en_US.UTF-8 locale (needs sudo)..."
@@ -61,8 +59,15 @@ if [[ "$OS" == "Linux" ]] && ! locale -a 2>/dev/null | grep -qi '^en_US\.utf8$';
   fi
 fi
 
-# Install packages from Brewfile.
-# Non-fatal: one unavailable package must not abort SSH setup under `set -e`.
+# macOS: adopt an existing VS Code BEFORE brew bundle runs.
+# The cask install fails against an unmanaged /Applications/Visual Studio Code.app.
+# That failure makes the whole bundle exit non-zero. Adopting later is too late.
+if [ "$OS" = "Darwin" ] && [ -d "/Applications/Visual Studio Code.app" ]; then
+  brew install --cask --adopt visual-studio-code > /dev/null 2>&1 || true
+fi
+
+# Keep brew bundle non-fatal.
+# One unavailable package MUST NOT abort SSH setup under `set -e`.
 log_info "Installing packages from Brewfile..."
 if brew bundle --file="$HOME/.config/homebrew/Brewfile"; then
   log_success "Packages installed successfully!"
@@ -71,19 +76,90 @@ else
   log_warn "Re-run later: brew bundle --file=\"\$HOME/.config/homebrew/Brewfile\""
 fi
 
-# Back up pre-existing .zshrc if it differs from yadm's version
-# (e.g. Amazon Linux dev desktops ship their own .zshrc with machine-specific aliases)
-if [ -f "$HOME/.zshrc" ] && [ -n "$(yadm diff "$HOME/.zshrc")" ]; then
-  log_info "Pre-existing .zshrc detected, backing up..."
-  mkdir -p "$HOME/.config/zsh"
-  mv "$HOME/.zshrc" "$HOME/.config/zsh/zshrc_backup.zsh"
-  # Strip PROMPT/RPROMPT lines — Starship handles the prompt
-  sed -i '/^export PROMPT=/,/^"/d;/^export RPROMPT=/d;/^PROMPT=/d;/^RPROMPT=/d' "$HOME/.config/zsh/zshrc_backup.zsh"
-  yadm checkout -- "$HOME/.zshrc"
-  log_success "Original .zshrc backed up to ~/.config/zsh/zshrc_backup.zsh"
+# Trust the internal Amazon tap when axe added it.
+# Homebrew silently ignores every formula and cask from an untrusted tap.
+if brew tap 2>/dev/null | grep -q '^amazon/amazon$'; then
+  brew trust amazon/amazon 2>/dev/null || log_warn "Could not trust the amazon/amazon tap."
 fi
 
-# Create local bin directory if it doesn't exist
+# Language runtimes. mise is the only version manager.
+# Versions come from the tracked ~/.config/mise/config.toml.
+if command -v mise &> /dev/null; then
+  # Brew owns mise. Drop a stale standalone copy that PATH does not use.
+  if [ -f "$HOME/.local/bin/mise" ] && [ "$(command -v mise)" != "$HOME/.local/bin/mise" ]; then
+    rm -f "$HOME/.local/bin/mise"
+    log_info "Removed shadowed standalone mise from ~/.local/bin"
+  fi
+  log_info "Installing runtimes from ~/.config/mise/config.toml..."
+  if mise install; then
+    log_success "mise runtimes ready."
+  else
+    log_warn "Some mise runtimes failed. Re-run: mise install"
+  fi
+else
+  log_warn "mise not found after brew bundle. Skipping runtime setup."
+fi
+
+# Wire Git LFS into the global git config. --skip-repo works outside a repo.
+if command -v git-lfs &> /dev/null; then
+  git lfs install --skip-repo > /dev/null
+  log_success "Git LFS configured."
+fi
+
+# Git identity lives in untracked ~/.gitconfig. Warn, never block.
+if ! git config --global user.name > /dev/null 2>&1; then
+  log_warn "git user.name is unset. Set it with:"
+  echo "    git config --global user.name 'Your Name'"
+  echo "    git config --global user.email 'you@example.com'"
+fi
+
+# Show untracked files in `yadm status`.
+# yadm's configure_repo() writes status.showUntrackedFiles=no on every new
+# repo, and that setting lives in the repo's own untracked config. So a fresh
+# clone cannot see what a later `yadm add -A` would stage. $HOME collapses to
+# about 100 entries, which stays readable.
+yadm gitconfig status.showUntrackedFiles normal
+
+# Warn when another installer rewrote a tracked file shared with axe.
+# Never auto-revert. A revert would discard a deliberate local change.
+#
+# Assert tracking first. yadm sets status.showuntrackedfiles=no.
+# So `status --porcelain` returns empty for an untracked path.
+# The check would then pass on the exact file that went missing.
+for shared in "$HOME/.config/mise/config.toml" "$HOME/.ssh/config" "$HOME/.zshrc"; do
+  if ! yadm ls-files --error-unmatch "$shared" > /dev/null 2>&1; then
+    log_warn "$shared is NOT tracked by yadm. A fresh clone will not get it."
+  elif [ -n "$(yadm status --porcelain "$shared" 2>/dev/null)" ]; then
+    log_warn "$shared differs from the tracked version. Review: yadm diff $shared"
+  fi
+done
+
+# Back up a foreign .zshrc on the FIRST install only.
+# Amazon Linux dev desktops ship their own .zshrc with machine-specific aliases.
+#
+# Two guards keep this one-shot. The grep finds our own marker, so later edits
+# never trigger a backup. The `! -e` test stops run 2 overwriting run 1's backup.
+# A "differs from tracked" test would fire on every edit, and `mv` would then
+# destroy the earlier backup.
+#
+# The backup takes a .disabled suffix. .zshrc auto-sources every *.zsh in this
+# directory, so a plain .zsh name would re-run the old config in every shell.
+zshrc_backup="$HOME/.config/zsh/zshrc_backup.zsh.disabled"
+if [ -f "$HOME/.zshrc" ] && [ ! -e "$zshrc_backup" ] \
+   && ! grep -q 'AUTO-ADDED CONTENT SECTION' "$HOME/.zshrc"; then
+  log_info "Foreign .zshrc detected, backing up..."
+  mkdir -p "$HOME/.config/zsh"
+  mv "$HOME/.zshrc" "$zshrc_backup"
+  # Strip PROMPT and RPROMPT lines. Starship owns the prompt.
+  # Do not use `sed -i`. BSD sed (macOS) needs a suffix argument, and GNU sed
+  # must not have one. Write to a temp file instead, which is portable both ways.
+  sed '/^export PROMPT=/,/^"/d;/^export RPROMPT=/d;/^PROMPT=/d;/^RPROMPT=/d' \
+    "$zshrc_backup" > "$zshrc_backup.tmp" \
+    && mv "$zshrc_backup.tmp" "$zshrc_backup"
+  yadm checkout -- "$HOME/.zshrc"
+  log_success "Original .zshrc backed up to $zshrc_backup"
+fi
+
 if [ ! -d "$HOME/.local/bin" ]; then
   log_info "Creating ~/.local/bin directory..."
   mkdir -p "$HOME/.local/bin"
@@ -91,20 +167,19 @@ if [ ! -d "$HOME/.local/bin" ]; then
   log_success "Local bin directory created!"
 fi
 
-# Generate machine-specific local.zsh from the template if missing (gitignored)
+# Seed machine-specific local.zsh from the template. The file is gitignored.
 if [ ! -f "$HOME/.config/zsh/local.zsh" ] && [ -f "$HOME/.config/zsh/local.zsh.example" ]; then
   cp "$HOME/.config/zsh/local.zsh.example" "$HOME/.config/zsh/local.zsh"
   log_success "Created ~/.config/zsh/local.zsh from template."
 fi
 
-# Function for handling SSH key generation and setup
+# Generate an SSH key and register it with GitHub.
 handle_ssh_key() {
   local key_path="$1"
   local key_name="$2"
   local host_alias="$3"
   local key_comment="$4"
   
-  # Generate key if it doesn't exist
   if [ ! -f "$key_path" ]; then
     log_info "No $key_name SSH key found, generating one..."
     ssh-keygen -t ed25519 -C "$key_comment" -f "$key_path" -N ""
@@ -112,8 +187,22 @@ handle_ssh_key() {
     chmod 644 "${key_path}.pub"
     log_success "$key_name SSH key generated!"
   fi
-  
-  # Display and copy key
+
+  # Add GitHub's host keys up front so the probe below cannot prompt.
+  ssh-keyscan -H github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
+  sort -u "$HOME/.ssh/known_hosts" -o "$HOME/.ssh/known_hosts" 2>/dev/null || true
+
+  # Skip the interactive hand-off when the key already works with GitHub.
+  # A re-run then never stops for input.
+  # Capture the output first. GitHub's `ssh -T` exits 1 even on success, and
+  # `set -o pipefail` would make the pipeline inherit that 1 and skip the guard.
+  local probe
+  probe="$(ssh -T -o BatchMode=yes -o ConnectTimeout=5 "git@$host_alias" 2>&1 || true)"
+  if printf '%s\n' "$probe" | grep -q 'successfully authenticated'; then
+    log_success "$key_name key already works with $host_alias. Skipping GitHub step."
+    return 0
+  fi
+
   log_info "Add your $key_name SSH key to GitHub:"
   echo ""
   cat "${key_path}.pub"
@@ -126,19 +215,14 @@ handle_ssh_key() {
   log_info "Add this $key_name key to GitHub: https://github.com/settings/ssh/new"
   read -p "Press Enter after adding the $key_name key to GitHub (or Ctrl+C to skip this step)..."
   
-  # Test SSH connection
   log_info "Testing SSH connection to GitHub with $key_name key..."
   echo "Command output (you may see locale warnings that can be safely ignored):"
   echo "-----------------------------------------------------------------"
   
-  # Temporarily disable exit on error for the SSH test
+  # Disable exit-on-error for the SSH test. known_hosts is already seeded above.
   set +e
-  # Add GitHub's host keys to known_hosts (avoids needing StrictHostKeyChecking=accept-new, which requires OpenSSH 7.6+)
-  ssh-keyscan -H github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
-  sort -u "$HOME/.ssh/known_hosts" -o "$HOME/.ssh/known_hosts"
-  # Run SSH test and capture the complete output
-  ssh -T git@$host_alias 2>&1
-  set -e  # Re-enable exit on error
+  ssh -T "git@$host_alias" 2>&1
+  set -e
   
   echo "-----------------------------------------------------------------"
   log_info "GitHub typically responds with a message containing 'successfully authenticated'"
@@ -147,44 +231,47 @@ handle_ssh_key() {
   read -p "Press Enter to continue..."
 }
 
-# Handle SSH directory and config permissions
+# SSH directory and config permissions.
 if [ ! -d "$HOME/.ssh" ]; then
   mkdir -p "$HOME/.ssh"
   log_info "Created missing ~/.ssh directory"
 fi
-chmod 700 "$HOME/.ssh"  # Ensure correct permissions
+chmod 700 "$HOME/.ssh"
 
-# Ensure the SSH config has proper permissions
 if [ -f "$HOME/.ssh/config" ]; then
   chmod 600 "$HOME/.ssh/config"
   log_info "SSH config found, permissions set to 600"
 fi
 
-# SSH config explanation
-log_info "Found SSH config with support for multiple GitHub accounts"
-log_info "- Primary account: git clone git@github.com:username/repo.git"
-log_info "- Secondary account: git clone git@github-2:username/repo.git"
+log_info "Primary account: git clone git@github.com:username/repo.git"
 
-# Handle primary key
 handle_ssh_key "$HOME/.ssh/id_ed25519" "PRIMARY" "github.com" "primary@$(hostname)"
 
-# Handle secondary key
-handle_ssh_key "$HOME/.ssh/id_ed25519-2" "SECONDARY" "github-2" "secondary@$(hostname)"
+# The secondary account is optional. `ssh -G` prints the effective config without
+# connecting, so this skips cleanly when ~/.ssh/config has no github-2 block.
+# axe and mwinit both create ~/.ssh/config, which blocks yadm from checking ours
+# out. Without this guard the script fails on an unresolvable hostname.
+if ssh -G github-2 2>/dev/null | grep -q '^hostname github\.com$'; then
+  log_info "Secondary account: git clone git@github-2:username/repo.git"
+  handle_ssh_key "$HOME/.ssh/id_ed25519-2" "SECONDARY" "github-2" "secondary@$(hostname)"
+else
+  log_info "No github-2 alias in ~/.ssh/config. Skipping the secondary key."
+fi
 
 log_info "SSH setup complete! You can now use different GitHub accounts:"
 log_info "- Primary: git clone git@github.com:username/repo.git"
 log_info "- Secondary: git clone git@github-2:username/repo.git"
 
-# Update yadm remote from HTTPS to SSH for better security and authentication
+# Switch the yadm remote to SSH. SSH avoids HTTPS credential prompts.
 log_info "Updating yadm remote URL from HTTPS to SSH format..."
 yadm remote set-url origin "git@github.com:maelmugerwa/.dotfiles.git"
 log_success "Remote URL updated to use SSH!"
 
 
 # ---------------------------------------------------------------------------
-# Self-check: exercise a real zsh startup and report health. NON-FATAL.
-# Catches platform-specific breakage (PATH clobber, locale, WSL paths) at
-# install time instead of silently. Never aborts the installer.
+# Self-check: run a real zsh startup and report health. NON-FATAL.
+# It catches platform breakage (PATH clobber, locale, WSL paths) at install time.
+# It MUST NOT abort the installer.
 # ---------------------------------------------------------------------------
 run_self_check() {
   local warns=0 out pathout wu
@@ -226,8 +313,14 @@ run_self_check || true
 
 log_success "Bootstrap completed successfully!"
 
-# Get path to Homebrew zsh
-BREW_ZSH="$(which zsh)"
+# Get path to Homebrew zsh. `brew bundle` is non-fatal, so zsh may be missing.
+# A bare `$(which zsh)` aborts under `set -e` right after the success banner.
+BREW_ZSH="$(command -v zsh || true)"
+if [ -z "$BREW_ZSH" ]; then
+  log_warn "zsh is not installed. Skipping the default-shell instructions."
+  log_warn "Install it, then re-run: brew bundle --file=\"\$HOME/.config/homebrew/Brewfile\""
+  exit 0
+fi
 
 echo ""
 echo "======================================================================"

@@ -1,6 +1,6 @@
 # Dotfiles - Alias Reference
 
-This document provides a comprehensive reference for all aliases included in the dotfiles, both ZSH shell aliases and Git aliases.
+This document lists every ZSH alias and Git alias in the dotfiles.
 
 - [ZSH Aliases](#zsh-aliases)
 - [Git Aliases](#git-aliases)
@@ -8,7 +8,7 @@ This document provides a comprehensive reference for all aliases included in the
 
 ## ZSH Aliases
 
-These aliases are defined in `.config/zsh/aliases.zsh` and loaded automatically when your shell starts.
+`.config/zsh/aliases.zsh` defines these aliases. Your shell loads them at start. The FZF utilities come from `.config/zsh/tools.zsh`.
 
 ### Modern CLI Tool Aliases
 
@@ -29,14 +29,13 @@ These aliases are defined in `.config/zsh/aliases.zsh` and loaded automatically 
 | `bathelp` | `bat --plain --language=help` | Display help pages with syntax highlighting |
 
 #### fd (Modern find)
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `find` | `fd` | Find files with simpler syntax |
+
+No alias exists. Call `fd` directly. An alias on `find` breaks fzf, scripts and Makefiles that expect GNU `find` syntax.
 
 #### ripgrep (Modern grep)
-| Alias | Command | Description |
+| Name | Kind | Description |
 |-------|---------|-------------|
-| `grep` | `rg` | Search file contents with faster, better output |
+| `grep` | function: `rg "$@" 2>/dev/null \|\| command grep "$@"` | Runs `rg` first. Falls back to the real `grep` if `rg` fails. |
 
 #### Neovim
 | Alias | Command | Description |
@@ -110,16 +109,27 @@ These aliases are defined in `.config/zsh/aliases.zsh` and loaded automatically 
 | `jl` | `just --list` | List available just recipes |
 
 ### FZF Utilities
+
+`.config/zsh/tools.zsh` defines these. They call `fd`, which respects `FZF_EXCLUDES`.
+
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `fcd` | `cd $(find . -type d \| fzf)` | Interactive cd to directory |
-| `fopen` | `xdg-open $(find . -type f \| fzf)` | Open file with default app |
-| `ff` | `find . -type f \| fzf` | Find files interactively |
-| `fd` | `find . -type d \| fzf` | Find directories interactively |
+| `fcd` | `cd $(fd --type d --hidden --follow \| fzf)` | Pick a directory, then cd to it |
+| `fopen` | `xdg-open $(fd --type f --hidden --follow \| fzf)` | Pick a file, then open it with the default app |
+| `ff` | `fd --type f --hidden --follow \| fzf` | Pick a file interactively |
+| `fdz` | `fd --type d --hidden --follow \| fzf` | Pick a directory interactively. Named `fdz` so it does not shadow the `fd` binary. |
+
+### MeshClaw
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `mc_dashboard` | `echo "http://localhost:7777 (SSH tunnel: ssh -L 7777:localhost:7777 $(hostname -f))"` | Print the dashboard URL and the SSH tunnel command |
+| `mc_restart` | `sudo systemctl restart meshclaw` | Restart the MeshClaw service |
+| `mc_tail` | `sudo journalctl -u meshclaw -f` | Follow the MeshClaw service log |
+| `mc_status` | `sudo systemctl status meshclaw` | Show MeshClaw service status |
 
 ## Git Aliases
 
-These aliases are defined in `.gitconfig` and are used with the `git` command.
+`.config/git/config` defines these aliases. Use them with the `git` command.
 
 ### Status & Information Commands
 | Alias | Command | Description | Example |

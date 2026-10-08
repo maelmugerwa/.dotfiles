@@ -1,11 +1,9 @@
-# completion.zsh - ZSH completion system configuration
-# This file sets up the tab completion system for commands and options
+# completion.zsh - tab completion for commands and options
 
-# Load completion system
 autoload -Uz compinit
 compinit
 
-# Make completion system smarter
+# Matching and display
 zstyle ':completion:*' menu select              # Menu-style completion selection
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'm:{a-zA-Z}={A-Za-z} r:|[._-]=* r:|=*' 'm:{a-zA-Z}={A-Za-z} l:|=* r:|=*'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"   # Colorize completion lists
@@ -13,7 +11,7 @@ zstyle ':completion:*' verbose true             # Detailed completion informatio
 zstyle ':completion:*' group-name ''            # Group matches by type
 zstyle ':completion:*' completer _expand _complete _ignored  # No _approximate (conflicts with matcher-list fuzzy)
 
-# Cache completion for faster response
+# Cache completions for speed.
 zstyle ':completion::complete:*' use-cache on
 zstyle ':completion::complete:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompcache"
 
