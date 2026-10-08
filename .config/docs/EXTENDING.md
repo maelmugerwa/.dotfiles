@@ -261,16 +261,27 @@ Edit `~/.config/homebrew/Brewfile`:
 ```ruby
 # Add a new package
 brew "package-name"      # Add a comment describing what the package does
-
-# Add a cask (macOS application)
-cask "application-name"  # Add a description of the application
 ```
+
+Casks are macOS-only. Homebrew on Linux has no cask support, so an unguarded
+`cask` line makes `brew bundle` fail. Put every cask inside the `OS.mac?` block:
+
+```ruby
+if OS.mac?
+  cask "application-name"  # Add a description of the application
+end
+```
+
+The Brewfile is evaluated as Ruby, so `OS.mac?` and `OS.linux?` both work.
 
 ### 2. Install the New Packages
 
 ```bash
-brew bundle --global
+brew bundle --file="$HOME/.config/homebrew/Brewfile"
 ```
+
+Do not use `brew bundle --global`. That reads `~/.Brewfile` or
+`$HOMEBREW_BUNDLE_FILE_GLOBAL`, neither of which points at this Brewfile.
 
 ### 3. Commit Your Changes
 

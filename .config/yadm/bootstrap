@@ -61,10 +61,15 @@ if [[ "$OS" == "Linux" ]] && ! locale -a 2>/dev/null | grep -qi '^en_US\.utf8$';
   fi
 fi
 
-# Install packages from Brewfile
+# Install packages from Brewfile.
+# Non-fatal: one unavailable package must not abort SSH setup under `set -e`.
 log_info "Installing packages from Brewfile..."
-brew bundle --file="$HOME/.config/homebrew/Brewfile"
-log_success "Packages installed successfully!"
+if brew bundle --file="$HOME/.config/homebrew/Brewfile"; then
+  log_success "Packages installed successfully!"
+else
+  log_warn "Some Brewfile packages failed. Continuing with the rest of bootstrap."
+  log_warn "Re-run later: brew bundle --file=\"\$HOME/.config/homebrew/Brewfile\""
+fi
 
 # Back up pre-existing .zshrc if it differs from yadm's version
 # (e.g. Amazon Linux dev desktops ship their own .zshrc with machine-specific aliases)

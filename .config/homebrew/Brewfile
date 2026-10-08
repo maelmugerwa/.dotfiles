@@ -41,6 +41,37 @@ brew "httpie"                     # User-friendly HTTP client (command: http)
 brew "fnm"                        # Fast Node.js version manager (commands: fnm use, fnm install)
 brew "pyenv"                      # Python version manager (commands: pyenv install, pyenv global)
 
+# Containers and local models
+brew "docker"                     # Docker CLI (command: docker)
+brew "colima"                     # Container runtime for Docker without Desktop (command: colima)
+brew "ollama"                     # Run LLMs locally (command: ollama)
+
 # Utilities
 brew "just"                       # Modern command runner (command: just)
-brew "xclip"                      # X11 clipboard tool (commands: xclip, xclip -o)
+
+# Linux-only: xclip needs X11 and has no use on macOS (pbcopy covers it)
+if OS.linux?
+  brew "xclip"                    # X11 clipboard tool (commands: xclip, xclip -o)
+end
+
+# macOS-only: Homebrew on Linux has no cask support, so an unguarded cask
+# line makes `brew bundle` fail and aborts the whole bootstrap.
+if OS.mac?
+  # Editors and AI coding agents
+  cask "visual-studio-code"       # Code editor (command: code)
+  cask "claude-code"              # Terminal-based AI coding assistant (command: claude)
+  cask "codex"                    # OpenAI terminal coding agent (command: codex)
+
+  # Window, keyboard, and menu-bar control
+  cask "rectangle"                # Window snapping via keyboard shortcuts
+  cask "karabiner-elements"       # Keyboard remapping
+  cask "bettertouchtool"          # Trackpad and input gesture customisation
+  cask "bartender"                # Menu-bar icon management
+  cask "alfred"                   # Launcher and clipboard history
+  cask "domzilla-caffeine"        # Keeps the system awake
+
+  # Apps
+  cask "ticktick"                 # Task manager
+  cask "spotify"                  # Music player
+  cask "finicky"                  # Routes links to a chosen browser
+end
